@@ -1,10 +1,13 @@
 from fastapi import HTTPException
 from typing import List, Dict, Any, Optional, Union
 import json, os, requests, datetime, hashlib
+import re
 
-from ..core.google_project_config import *
 from .bucket_helpers import upload_file_to_bucket
 from .json_helpers import remove_json_metadata
+from ..core.google_project_config import *
+from ..models.request_enum import AudioExtension
+from ..api.v1.endpoints.get.gcloud_storage import get_audio
 
 # Helper function for getting audio file path
 def extract_audio_path(full_url):
@@ -120,3 +123,34 @@ def get_file_name_and_extension(file_path):
     file_name, file_extension = os.path.splitext(file_path)
     # Return the file extension
     return {"file_name": file_name, "file_extension": file_extension}
+
+async def get_file_from_user_upload(user_id: str, file_name: str) -> Dict[str, Any]:
+    """Get file information from a user uploaded file."""
+    audio_file = await fetch_and_store_audio(user_id, file_name)
+    return {
+        "file_id": audio_file["file_id"],
+        "audio_file_path": None,
+        "file_name": file_name
+    }
+
+async def get_file_from_storage(file_id: str, file_extension: AudioExtension) -> Dict[str, Any]:
+    """Retrieve file information from storage using file_id."""
+    file_url = await get_audio(file_id, file_extension)
+    audio_file_path = extract_audio_path(file_url)
+    file_name = extract_patient_name(audio_file_path)
+    return {
+        "file_id": file_id,
+        "audio_file_path": audio_file_path,
+        "file_name": file_name
+    }
+
+def extract_patient_name(file_path: str) -> Optional[str]:
+    """Extract patient name from file path using regex pattern."""
+    pattern = r'(.*?)patient_'
+    match = re.search(pattern, file_path)
+    if match:
+        patient = match.group(1)
+        file_name = patient.replace('patient_', '')
+        print(f"Patient name: {file_name}")
+        return file_name
+    return None
