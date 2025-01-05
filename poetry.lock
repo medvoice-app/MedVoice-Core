@@ -356,13 +356,13 @@ files = [
 
 [[package]]
 name = "botocore"
-version = "1.35.90"
+version = "1.35.92"
 description = "Low-level, data-driven core of boto 3."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "botocore-1.35.90-py3-none-any.whl", hash = "sha256:51dcbe1b32e2ac43dac17091f401a00ce5939f76afe999081802009cce1e92e4"},
-    {file = "botocore-1.35.90.tar.gz", hash = "sha256:f007f58e8e3c1ad0412a6ddfae40ed92a7bca571c068cb959902bcf107f2ae48"},
+    {file = "botocore-1.35.92-py3-none-any.whl", hash = "sha256:f94ae1e056a675bd67c8af98a6858d06e3927d974d6c712ed6e27bb1d11bee1d"},
+    {file = "botocore-1.35.92.tar.gz", hash = "sha256:caa7d5d857fed5b3d694b89c45f82b9f938f840e90a4eb7bf50aa65da2ba8f82"},
 ]
 
 [package.dependencies]
@@ -721,13 +721,13 @@ numpy = "*"
 
 [[package]]
 name = "chromadb"
-version = "0.5.23"
+version = "0.6.1"
 description = "Chroma."
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 files = [
-    {file = "chromadb-0.5.23-py3-none-any.whl", hash = "sha256:ffe5bdd7276d12cb682df0d38a13aa37573e6a3678e71889ac45f539ae05ad7e"},
-    {file = "chromadb-0.5.23.tar.gz", hash = "sha256:360a12b9795c5a33cb1f839d14410ccbde662ef1accd36153b0ae22312edabd1"},
+    {file = "chromadb-0.6.1-py3-none-any.whl", hash = "sha256:3483ea9e1271b647f3696e1f39ee9e464bb23a6a9913f42c57a84657c34467bb"},
+    {file = "chromadb-0.6.1.tar.gz", hash = "sha256:af55d143fd887f344ff05cd40560566dda1dd13e90ec5a13fb0f5278eb8cde75"},
 ]
 
 [package.dependencies]
@@ -754,7 +754,7 @@ pypika = ">=0.48.9"
 PyYAML = ">=6.0.0"
 rich = ">=10.11.0"
 tenacity = ">=8.2.3"
-tokenizers = ">=0.13.2,<=0.20.3"
+tokenizers = ">=0.13.2"
 tqdm = ">=4.65.0"
 typer = ">=0.9.0"
 typing_extensions = ">=4.5.0"
@@ -3611,13 +3611,13 @@ typing-extensions = ">=4.6.0,<4.7.0 || >4.7.0"
 
 [[package]]
 name = "pydantic-settings"
-version = "2.7.0"
+version = "2.7.1"
 description = "Settings management using Pydantic"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pydantic_settings-2.7.0-py3-none-any.whl", hash = "sha256:e00c05d5fa6cbbb227c84bd7487c5c1065084119b750df7c8c1a554aed236eb5"},
-    {file = "pydantic_settings-2.7.0.tar.gz", hash = "sha256:ac4bfd4a36831a48dbf8b2d9325425b549a0a6f18cea118436d728eb4f1c4d66"},
+    {file = "pydantic_settings-2.7.1-py3-none-any.whl", hash = "sha256:590be9e6e24d06db33a4262829edef682500ef008565a969c73d39d5f8bfb3fd"},
+    {file = "pydantic_settings-2.7.1.tar.gz", hash = "sha256:10c9caad35e64bfb3c2fbf70a078c0e25cc92499782e5200747f942a065dec93"},
 ]
 
 [package.dependencies]
@@ -5149,4 +5149,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "c6fd2cb72a3ef50a611713cc1df3b0e967e566353564e76863fdcb5bfdc5b550"
+content-hash = "432ce6230dbe97fde7379beb2b6d40ae1a0285e8f72071a1b6770c61d7b11e87"
