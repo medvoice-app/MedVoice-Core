@@ -1,31 +1,45 @@
+const apiUrl = 'https://medvoice-fastapi.ngrok.dev/';
+
 document.getElementById('audioForm').addEventListener('submit', function(event) {
     event.preventDefault();
 
-    var fileId = document.getElementById('fileId').value;
-    var fileExtension = document.getElementById('fileExtension').value;
-    var userId = document.getElementById('userId').value;
-    var fileName = document.getElementById('fileName').value;
+    const userId = document.getElementById('userId').value;
+    const params = new URLSearchParams({
+        file_id: document.getElementById('fileId').value,
+        file_extension: document.getElementById('fileExtension').value,
+        file_name: document.getElementById('fileName').value
+    }).toString();
 
-    const url = new URL(`https://medvoice-fastapi.ngrok.dev/process_audio_v2/${userId}`);
-
-    if (fileId) url.searchParams.append('file_id', fileId);
-    if (fileExtension) url.searchParams.append('file_extension', fileExtension);
-    if (fileName) url.searchParams.append('file_name', fileName);
-
+    const url = `${apiUrl}process_audio_v2/${userId}?${params}`;
     processAudioRequest(url);
 });
 
-function processAudioRequest(url) {
-    fetch(url, { method: 'POST' })
-        .then(response => response.json())
-        .then(data => createTaskRow(data))
-        .catch(error => {
-            console.error('Error processing audio:', error);
-            alert('An error occurred while processing the audio.');
-        });
+// Update the original usage in llm-pipeline.js
+async function processAudioRequest(url) {
+    try {
+        const response = await fetch(url, { method: 'POST' });
+        const data = await response.json();
+        createTaskRow(data, 'taskTable');  // Explicitly specify default table
+    } catch (error) {
+        console.error('Error processing audio:', error);
+        alert('An error occurred while processing the audio.');
+    }
 }
 
-function createTaskRow(data) {
+// Updated to accept tableId parameter
+function createTaskRow(data, tableId = 'taskTable') {
+    const table = document.getElementById(tableId);
+    if (!table) {
+        console.error(`Table with ID ${tableId} not found`);
+        return;
+    }
+
+    const tbody = table.getElementsByTagName('tbody')[0];
+    if (!tbody) {
+        console.error(`No tbody found in table ${tableId}`);
+        return;
+    }
+
     const tr = document.createElement('tr');
     const td1 = document.createElement('td');
     const td2 = document.createElement('td');
@@ -40,7 +54,7 @@ function createTaskRow(data) {
     
     tr.appendChild(td1);
     tr.appendChild(td2);
-    document.getElementById('taskTable').getElementsByTagName('tbody')[0].appendChild(tr);
+    tbody.appendChild(tr);
 }
 
 function createCheckStatusButton(taskId) {
@@ -53,20 +67,20 @@ function createCheckStatusButton(taskId) {
     return button;
 }
 
-function checkTaskStatus(taskId, button) {
-    fetch('https://medvoice-fastapi.ngrok.dev/get_audio_task/' + taskId)
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'SUCCESS') {
-                handleSuccessStatus(data, button);
-            } else {
-                alert('Task Status: ' + data.status);
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching task result:', error);
-            alert('An error occurred. Please try again.');
-        });
+async function checkTaskStatus(taskId, button) {
+    try {
+        const response = await fetch(`${apiUrl}get_audio_task/${taskId}`);
+        const data = await response.json();
+        
+        if (data.status === 'SUCCESS') {
+            handleSuccessStatus(data, button);
+        } else {
+            alert('Task Status: ' + data.status);
+        }
+    } catch (error) {
+        console.error('Error fetching task result:', error);
+        alert('An error occurred. Please try again.');
+    }
 }
 
 function handleSuccessStatus(data, button) {
@@ -89,13 +103,6 @@ function createJsonModal(jsonData) {
 }
 
 // Helper functions for modal creation
-function createModalStructure() {
-    const modal = document.createElement('div');
-    modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full';
-    modal.id = 'jsonModal';
-    return modal;
-}
-
 function createModalStructure() {
     const modal = document.createElement('div');
     modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full';

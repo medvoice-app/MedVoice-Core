@@ -32,20 +32,24 @@ celery_app.conf.update(
 celery_app.autodiscover_tasks()
 
 
-async def handle_uploaded_file_case(user_id: str, file: UploadFile) -> Tuple[str, str, str, str]:
+async def handle_uploaded_file_case(user_id: str, file_path: str, file_metadata: dict) -> Tuple[str, str, str, str]:
     """Handle the case when a file is uploaded directly."""
-    temp_file_path = f"temp/{file.filename}"
-    with open(temp_file_path, "wb") as buffer:
-        content = await file.read()
-        buffer.write(content)
-    
-    audio_file = await fetch_and_store_audio(user_id, file.filename)
-    file_id, audio_file_path = audio_file["file_id"], audio_file["new_file_name"]
-    file_url = f"https://storage.googleapis.com/{cloud_details['bucket_name']}/{audio_file_path}"
-    patient_name = get_file_name_and_extension(file.filename)["file_name"]
-    remove_local_file(temp_file_path)
-    
-    return file_id, audio_file_path, file_url, patient_name
+    try:
+        audio_file = await fetch_and_store_audio(user_id, file_metadata["filename"])
+        file_id, audio_file_path = audio_file["file_id"], audio_file["new_file_name"]
+        file_url = f"https://storage.googleapis.com/{cloud_details['bucket_name']}/{audio_file_path}"
+        patient_name = get_file_name_and_extension(file_metadata["filename"])["file_name"]
+        
+        # Clean up temp file
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        
+        return file_id, audio_file_path, file_url, patient_name
+    except Exception as e:
+        # Ensure cleanup on error
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        raise e
 
 async def handle_file_id_case(file_id: str, file_extension: AudioExtension) -> Tuple[str, str, str]:
     """Handle the case when a file_id is provided."""
@@ -87,7 +91,8 @@ async def process_audio_background(
     file_extension: Optional[AudioExtension] = AudioExtension.m4a,
     user_id: Optional[str] = None,
     file_name: Optional[str] = None,
-    file: Optional[UploadFile] = None,
+    file_path: Optional[str] = None,
+    file_metadata: Optional[dict] = None,
 ):
     """Main audio processing function."""
     try:
@@ -97,8 +102,8 @@ async def process_audio_background(
         file_url = None
         
         # Handle different input cases
-        if user_id and file:
-            file_id, audio_file_path, file_url, patient_name = await handle_uploaded_file_case(user_id, file)
+        if user_id and file_path and file_metadata:
+            file_id, audio_file_path, file_url, patient_name = await handle_uploaded_file_case(user_id, file_path, file_metadata)
         elif file_id:
             audio_file_path, file_url, patient_name = await handle_file_id_case(file_id, file_extension)
             file_name = patient_name.replace("patient_", "") if patient_name else None
@@ -121,13 +126,21 @@ def process_audio_task(
     file_extension: str = "m4a",
     user_id: Optional[str] = None,
     file_name: Optional[str] = None,
-    file: Optional[UploadFile] = None,
+    file_path: Optional[str] = None,
+    file_metadata: Optional[dict] = None,
 ):
     try:
         # Run the async function in an event loop
         loop = asyncio.get_event_loop()
         result = loop.run_until_complete(
-            process_audio_background(file_id, file_extension, user_id, file_name, file)
+            process_audio_background(
+                file_id=file_id,
+                file_extension=file_extension,
+                user_id=user_id,
+                file_name=file_name,
+                file_path=file_path,
+                file_metadata=file_metadata
+            )
         )
         return result
     except Exception as e:
