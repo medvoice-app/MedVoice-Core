@@ -7,7 +7,6 @@ async function handleAudioUpload() {
     const userId = document.getElementById('audioUserId').value;
     const fileInput = document.getElementById('audioFile');
     const statusDiv = document.getElementById('uploadStatus');
-    const spinner = document.getElementById('audioUploadSpinner');
 
     if (!validateInput(userId, fileInput, statusDiv)) return;
 
@@ -15,15 +14,12 @@ async function handleAudioUpload() {
     formData.append('file', fileInput.files[0]);
 
     try {
-        statusDiv.innerHTML = ''; // Clear any previous status
-        spinner.style.display = 'block'; // Show spinner
+        updateStatus(statusDiv, 'Uploading...', 'blue');
         const data = await uploadAudio(userId, formData);
         handleUploadSuccess(data, statusDiv);
-        createTaskRow(data, 'audioTaskTable');
+        createTaskRow(data);
     } catch (error) {
         updateStatus(statusDiv, `Error: ${error.message}`, 'red');
-    } finally {
-        spinner.style.display = 'none'; // Hide spinner
     }
 }
 
@@ -72,4 +68,49 @@ function handleUploadSuccess(data, statusDiv) {
         <p>Task ID: ${taskId}</p>
         <p>Filename: ${filename}</p>
     `;
+}
+
+function createTaskRow(data) {
+    const tr = document.createElement('tr');
+    const td1 = document.createElement('td');
+    const td2 = document.createElement('td');
+    
+    td1.textContent = data.task_id;
+    td1.className = "border px-6 py-4";
+    
+    td2.className = "border px-6 py-4";
+    
+    const checkStatusButton = createCheckStatusButton(data.task_id);
+    td2.appendChild(checkStatusButton);
+    
+    tr.appendChild(td1);
+    tr.appendChild(td2);
+    document.getElementById('audioTaskTable').getElementsByTagName('tbody')[0].appendChild(tr);
+}
+
+function createCheckStatusButton(taskId) {
+    const button = document.createElement('button');
+    button.textContent = 'Check Status';
+    button.className = "bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded text-lg";
+    
+    button.addEventListener('click', () => checkTaskStatus(taskId, button));
+    
+    return button;
+}
+
+async function checkTaskStatus(taskId, button) {
+    try {
+        const response = await fetch(`${apiUrl}get_audio_task/${taskId}`);
+        const data = await response.json();
+        
+        if (data.status === 'SUCCESS') {
+            button.textContent = 'Done';
+            alert('Audio processing completed successfully!');
+        } else {
+            alert('Task Status: ' + data.status);
+        }
+    } catch (error) {
+        console.error('Error checking task status:', error);
+        alert('An error occurred while checking the status.');
+    }
 }

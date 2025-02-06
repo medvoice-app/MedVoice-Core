@@ -1,7 +1,6 @@
-import json, requests
 from typing import Optional
 
-from fastapi import HTTPException, Response, APIRouter
+from fastapi import HTTPException, APIRouter
 from .....utils.file_helpers import *
 from .....utils.json_helpers import *
 from .....llm.replicate_models import (
@@ -23,10 +22,6 @@ async def llm_pipeline_audio_to_json_endpoint(
     file_url: str, patient_name: Optional[str] = None
 ):
     return await llm_pipeline_audio_to_json(file_url, patient_name)
-
-@router.post("/ask-llama2/")
-async def ask_llama2_endpoint(question_body: Question):
-    return await ask_llam2(question_body.question)
 
 @router.post("/rag-ask/")
 async def rag_ask_endpoint(question_body: Question):
@@ -84,14 +79,3 @@ async def llm_pipeline_audio_to_json(file_url: str, patient_name: Optional[str] 
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-async def ask_llam2(question: str):
-    res = requests.post(
-        "http://ollama:11434/api/generate",
-        json={
-            "prompt": question,
-            "stream": False,
-            "model": "llama2",
-        },
-    )
-    return Response(content=res.text, media_type="application/json")
