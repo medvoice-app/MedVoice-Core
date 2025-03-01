@@ -37,7 +37,6 @@ env-secrets:
 .PHONY: venv-all
 venv-all: venv-install env-secrets
 
-
 .PHONY: nvidia
 nvidia: 
 	@echo "Running installation script..."
@@ -63,6 +62,15 @@ up:
 		fi; \
 	fi
 	@echo "Project started."
+
+.PHONY: down
+down:
+	@if command -v docker-compose >/dev/null 2>&1; then \
+		docker-compose down; \
+	else \
+		docker compose down; \
+	fi
+	@echo "Project stopped."
 
 .PHONY: check
 check:
