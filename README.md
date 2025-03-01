@@ -3,12 +3,62 @@
 This is the backend for the MedVoice project, which includes the ML pipeline for Whisper-Diarization, Llama3 models, and others LLMs.
 
 ### What is MedVoice?
-MedVoice is a Mobile Application that supports coverting Speech to Medical Documentation format in real-time!
+MedVoice is a Mobile Application that supports converting Speech to Medical Documentation format in real-time!
+
+## Project Architecture
+
+```mermaid
+sequenceDiagram
+    actor Doctor
+    participant Mobile as Mobile App
+    participant Backend as FastAPI Backend
+    participant LLM as LLM Service
+    participant DB as Database
+    participant Storage as Cloud Storage
+
+    Doctor->>Mobile: Records patient conversation
+    Mobile->>Backend: Uploads audio file
+    Backend->>Storage: Stores audio file
+    Backend->>Backend: Processes audio with Whisper + Llama
+    Backend->>LLM: Sends transcription for analysis
+    LLM->>Backend: Returns medical documentation
+    Backend->>DB: Stores documentation
+    Backend->>Mobile: Returns formatted documentation
+    Mobile->>Doctor: Displays documentation
+    Doctor->>Mobile: Reviews
+```
+
+## Project Structure
+
+```
+MedVoice-FastAPI/
+├── app/                    # Main application code
+│   ├── api/                # API endpoints
+│   │   └── v1/             # API version 1
+│   ├── core/               # Core configuration
+│   ├── crud/               # Database CRUD operations
+│   ├── db/                 # Database connection and models
+│   ├── llm/                # LLM integration code
+│   ├── models/             # Database models
+│   ├── schemas/            # Pydantic schemas
+│   └── utils/              # Utility functions
+├── assets/                 # Static assets
+├── audios/                 # Audio file storage
+├── docker/                 # Docker configuration files
+├── docs/                   # Documentation
+├── outputs/                # Output file storage
+├── scripts/                # Utility scripts
+└── static/                 # Static frontend files
+    └── js/                 # JavaScript files
+```
 
 ## *Before you start*
-1. This `README` assumes that your machine is Debian-based. Please find the equivalent commands if you are running on a Windows machine or other OS.
+1. This `README` assumes that your machine is Debian-based. Please find the equivalent commands if you are running on a Windows or other OS.
 2. This `README` assumes that your machine has enough GPU resources to run `nomic-embed-text` Ollama model. Please find the equivalent GPU Cloud Instance if your local does not have enough resources.
 3. Make sure that you have turn off your VPN.
+
+Once the application is running, the complete API documentation is available at:
+- Swagger UI: `http://localhost:8000/docs`
 
 ## Build Instructions
 
@@ -84,16 +134,35 @@ Ensure the following dependencies are installed on your machine:
 - Import dependencies from `requirements.txt` to `poetry.lock`: 
     - `poe import`
         
+## Required Environment Variables
+
+Create an `.env` file in the project root with the following variables:
+
+```env
+# Ngrok configuration (for remote access)
+NGROK_AUTH_TOKEN=your-auth-token
+NGROK_API_KEY=your-api-key
+NGROK_EDGE=your-edge-label
+NGROK_TUNNEL=your-tunnel-name
+
+# Google Cloud configuration
+GCLOUD_PROJECT_ID=your-project-id
+GCLOUD_STORAGE_BUCKET=your-bucket-name
+
+# Ollama configuration (default is fine for local development)
+OLLAMA_BASE_URL=http://host.docker.internal:11434
+
+# Replicate API key
+REPLICATE_API_TOKEN=your-replicate-api-token
+```
+
 ## Obtaining the Replicate API Key
 
 To use the Replicate API, follow these steps:
 
 1. Visit the Replicate website at [https://www.replicate.ai](https://www.replicate.ai) and sign in.
 2. Generate a new API key in your account settings.
-3. Add the API key to the `.env` file:
-    ```env
-    REPLICATE_API_KEY=<YOUR_API_KEY>
-    ```
+3. Add the API key to the `.env` file as shown above.
 
 ## Setup your `google-credentials.json` file
 
