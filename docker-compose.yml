@@ -31,17 +31,7 @@ services:
       - RUNNING_IN_DOCKER=true
     env_file:
       - .env
-    command:
-      [
-        "uvicorn",
-        "app.main:app",
-        "--host",
-        "0.0.0.0",
-        "--port",
-        "8000",
-        "--loop",
-        "asyncio"
-      ]
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --loop asyncio
     volumes:
       - ./app:/workspace/code/app
     extra_hosts:
@@ -49,9 +39,12 @@ services:
     networks:
       - bridge-net
     depends_on:
-      - redis
-      - db
-      - pgvector-db
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+      pgvector-db:
+        condition: service_healthy
 
   db:
     image: postgres:13
@@ -63,6 +56,12 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - bridge-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   pgvector-db:
     image: pgvector/pgvector:pg16
@@ -74,6 +73,12 @@ services:
       - pgvector_data:/var/lib/postgresql/data
     networks:
       - bridge-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   worker:
     build: .
@@ -85,13 +90,20 @@ services:
     networks:
       - bridge-net
     depends_on:
-      - web
-      - redis
+      web:
+        condition: service_started
+      redis:
+        condition: service_healthy
 
   redis:
     image: redis:7
     networks:
       - bridge-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   dashboard:
     build: .
@@ -103,9 +115,8 @@ services:
     networks:
       - bridge-net
     depends_on:
-      - web
-      - redis
-      - worker
+      worker:
+        condition: service_started
 
 volumes:
   local-vol:
@@ -113,7 +124,6 @@ volumes:
   postgres_data:
   pgvector_data:
   nginx_logs:
-
 
 networks:
   bridge-net:
