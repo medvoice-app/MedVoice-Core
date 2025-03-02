@@ -1,4 +1,3 @@
-
 SHELL := /bin/bash
 DOCKER_FLAGS := up --build --scale worker=1
 GPU ?= false
@@ -13,12 +12,18 @@ ifneq (,$(wildcard .env))
     export
 endif
 
+###############################################################################
+# INSTALLATION COMMANDS
+###############################################################################
+
+# Run the main installation script to set up project dependencies
 .PHONY: install
 install: 
 	@echo "Running installation script..."
 	@chmod +x scripts/install.sh
 	@./scripts/install.sh
 
+# Create a Python virtual environment and install project dependencies 
 .PHONY: venv-install
 venv-install: install
 	# Ensure Python3 and virtual environment
@@ -27,6 +32,22 @@ venv-install: install
 	@bash -c "source venv/bin/activate && pip install -r requirements.txt && poetry install"
 	@echo "Dependencies installed successfully."
 
+# Complete setup: install dependencies and create environment file
+.PHONY: venv-all
+venv-all: venv-install env-secrets
+
+# Install NVIDIA toolkit for GPU support
+.PHONY: nvidia
+nvidia: 
+	@echo "Running installation script..."
+	@chmod +x scripts/install_nvidia_toolkit.sh
+	@./scripts/install_nvidia_toolkit.sh
+
+###############################################################################
+# ENVIRONMENT SETUP
+###############################################################################
+
+# Create environment file from template and open it for editing
 .PHONY: env-secrets
 env-secrets:
 	@echo "Creating .env file..."
@@ -34,15 +55,18 @@ env-secrets:
 	@echo ".env file has been created!"
 	@vi .env
 
-.PHONY: venv-all
-venv-all: venv-install env-secrets
+# Create ngrok configuration file from template
+.PHONY: ngrok
+ngrok:
+	@echo "Creating ngrok.yml configuration file..."
+	@envsubst < ngrok.example.yml > ngrok.yml
+	@echo "ngrok.yml file has been created!"
 
-.PHONY: nvidia
-nvidia: 
-	@echo "Running installation script..."
-	@chmod +x scripts/install_nvidia_toolkit.sh
-	@./scripts/install_nvidia_toolkit.sh
+###############################################################################
+# DOCKER COMMANDS
+###############################################################################
 
+# Start the project using Docker Compose with optional GPU support
 .PHONY: up
 up:
 	@if [ "$(GPU)" = "true" ]; then \
@@ -63,6 +87,7 @@ up:
 	fi
 	@echo "Project started."
 
+# Stop all Docker Compose services
 .PHONY: down
 down:
 	@if command -v docker-compose >/dev/null 2>&1; then \
@@ -72,6 +97,11 @@ down:
 	fi
 	@echo "Project stopped."
 
+###############################################################################
+# UTILITY COMMANDS
+###############################################################################
+
+# Verify system dependencies and required configuration files
 .PHONY: check
 check:
 	@echo "Checking system dependencies and required files..."
@@ -91,10 +121,3 @@ check:
 	@test -f ngrok.yml && echo "✔ ngrok.yml file exists." || echo "✘ ngrok.yml file is missing. Please see ngrok.example.yml for reference and add it."
 	@echo ""
 	@echo "System check complete. If you are running the project in Ubuntu, run make install to setup the project."
-
-# Setup ngrok.yml
-.PHONY: ngrok
-ngrok:
-	@echo "Creating ngrok.yml configuration file..."
-	@envsubst < ngrok.example.yml > ngrok.yml
-	@echo "ngrok.yml file has been created!"

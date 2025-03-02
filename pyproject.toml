@@ -77,7 +77,7 @@ run = "uvicorn 'app.main:app' --host=0.0.0.0 --port=8000 --loop asyncio"
 compose = "docker-compose up --build --scale worker=1"
 compose2 = "docker compose up --build --scale worker=1"
 export = "poetry export -f requirements.txt --output requirements.txt --without-hashes"
-import = "python3 scripts/requirements_to_pyproject.py"
+import = "python3 scripts/pip_to_poetry_pkg.py"
 flush = "python3 scripts/empty_dir.py"
 
 [build-system]
