@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException
 from .....models.request_enum import Question
 from .....llm.rag import RAGSystem_JSON
 from .....utils.file_helpers import remove_local_file
-from ..get.gcloud_storage import get_transcripts_by_user
+from ..get.minio_storage import get_transcripts_by_user
 
 router = APIRouter()
 

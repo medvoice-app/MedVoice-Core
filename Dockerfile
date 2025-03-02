@@ -44,7 +44,6 @@ COPY . .
 # Set the environment variable to indicate that the application is running in Docker
 ENV RUNNING_IN_DOCKER=true
 ENV NGROK_CONFIG_PATH /workspace/code/ngrok.yml
-ENV GOOGLE_APPLICATION_CREDENTIALS /workspace/code/google-credentials.json
 
 # Expose port 8000 and 11434
 EXPOSE 8000 11434

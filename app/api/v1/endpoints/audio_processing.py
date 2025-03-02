@@ -4,12 +4,12 @@ from celery.result import AsyncResult
 from typing import Optional, List
 from ....models.request_enum import AudioExtension, FileExtension, AudioUploadResponse
 from ....worker import process_audio_task
+from ....utils.storage_helpers import upload_file
 from ....utils.file_helpers import (
     get_file_from_user_upload,
     get_file_from_storage,
     generate_output_filename,
     remove_local_file,
-    upload_file_to_bucket
 )
 
 router = APIRouter()
@@ -78,7 +78,7 @@ async def process_transcript(
         transcript_text = "\n".join(transcript)
         transcript_file_path = generate_output_filename(transcript, file_info["file_id"], file_info["file_name"])
 
-        upload_file_to_bucket(transcript_file_path, transcript_file_path)
+        upload_file(transcript_file_path, transcript_file_path)
         remove_local_file(file_info["audio_file_path"])
         remove_local_file(transcript_file_path)
 

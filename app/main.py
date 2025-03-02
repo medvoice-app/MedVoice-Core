@@ -9,9 +9,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from celery.result import AsyncResult
 
-from .utils.bucket_helpers import *
 from .utils.json_helpers import *
-from .core.google_project_config import *
+from .core.minio_config import *
 from .core.app_config import ON_LOCALHOST
 from .models.request_enum import *
 from .worker import *

@@ -3,18 +3,15 @@ from typing import List, Dict, Any, Optional, Union
 import json, os, requests, datetime, hashlib
 import re
 
-from .bucket_helpers import upload_file_to_bucket
+from .storage_helpers import upload_file, download_file, extract_path_from_url
 from .json_helpers import remove_json_metadata
-from ..core.google_project_config import *
+from ..core.minio_config import *
 from ..models.request_enum import AudioExtension
-from ..api.v1.endpoints.get.gcloud_storage import get_audio
+from ..api.v1.endpoints.get.minio_storage import get_audio
 
 # Helper function for getting audio file path
 def extract_audio_path(full_url):
-    base_url = f"https://storage.googleapis.com/{cloud_details['bucket_name']}/"
-    # Remove the base URL
-    audio_path = full_url.replace(base_url, "")
-    return audio_path
+    return extract_path_from_url(full_url)
 
 def remove_local_file(file_path):
     if file_path is not None:
@@ -28,28 +25,25 @@ def remove_local_file(file_path):
 
 async def fetch_and_store_audio(user_id: str, file_name: str):
     try:
-        file_url = f"https://storage.googleapis.com/{cloud_details['bucket_name']}/{file_name}"
-        # Initialize file_path before the if statement
-        file_path = os.path.join("audios", file_url.split("/")[-1])
-
-        response = requests.get(file_url, stream=True)
-
-        if response.status_code != 200:
-            print(f"Failed to download file. Status code: {response.status_code}")
-            # Handle the case where the file could not be downloaded
-            raise Exception(f"Failed to download file. Status code: {response.status_code}")
+        # Initialize file_path
+        file_path = os.path.join("audios", os.path.basename(file_name))
         
-        # Open the local file in write mode
-        with open(file_path, 'wb') as f:
-            for chunk in response.iter_content(chunk_size=8192):
-                f.write(chunk)
+        # Ensure the audios directory exists
+        os.makedirs("audios", exist_ok=True)
+        
+        # Download the file using our storage helper
+        local_file = download_file(file_name, file_path)
+        
+        print(f"File downloaded successfully to {local_file}")
 
-        print(f"File downloaded successfully to {file_path}")
-
-        audio_file = generate_audio_filename(file_path, user_id)
+        # Generate a new filename with metadata
+        audio_file = generate_audio_filename(local_file, user_id)
         print(audio_file)
-        upload_file_to_bucket(audio_file['new_file_name'], audio_file['new_file_name'])
+        
+        # Upload the file using our storage helper
+        upload_file(audio_file['new_file_name'], audio_file['new_file_name'])
 
+        # Clean up the local file
         remove_local_file(audio_file["new_file_name"])
 
         return {
@@ -106,16 +100,23 @@ def generate_output_filename(data: Union[List[str], Dict[str, Any]], file_id: st
         # Convert the cleaned dictionary to a JSON string
         data_to_write = json.dumps(clean_data, indent=4)  # Use clean_data instead of data
 
-    # Define the full file path
-    output_file_path = os.path.join('outputs', f'{file_id}_{file_name}_{user_id}_output.{file_extension}')
+    # Define the local file path
+    object_name = f'{file_id}_{file_name}_{user_id}_output.{file_extension}'
+    output_file_path = os.path.join('outputs', object_name)
 
-    # Write data to the file
+    # Write data to the local file
     with open(output_file_path, 'w') as f:
         f.write(data_to_write)
 
-    print(f"Output saved to {output_file_path}")
-
-    return output_file_path
+    print(f"Output saved locally to {output_file_path}")
+    
+    # Upload to storage and get URL
+    file_url = upload_file(output_file_path, object_name)
+    
+    # Clean up local file
+    remove_local_file(output_file_path)
+    
+    return file_url
 
 # Helper function for file information
 def get_file_name_and_extension(file_path):

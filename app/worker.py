@@ -3,15 +3,15 @@ from typing import Optional, Dict, Any, Tuple
 from celery import Celery
 from fastapi import HTTPException, UploadFile
 
-from .utils.bucket_helpers import *
+from .utils.storage_helpers import *
 from .utils.file_helpers import *
 from .utils.json_helpers import *
-from .core.google_project_config import *
+from .core.minio_config import minio_config
 from .models.request_enum import *
 
 # API Router
 from .api.v1.endpoints.post.llm import *
-from .api.v1.endpoints.get.gcloud_storage import *
+from .api.v1.endpoints.get.minio_storage import *
 
 # In app/worker.py
 redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
@@ -37,7 +37,14 @@ async def handle_uploaded_file_case(user_id: str, file_path: str, file_metadata:
     try:
         audio_file = await fetch_and_store_audio(user_id, file_metadata["filename"])
         file_id, audio_file_path = audio_file["file_id"], audio_file["new_file_name"]
-        file_url = f"https://storage.googleapis.com/{cloud_details['bucket_name']}/{audio_file_path}"
+        
+        # Construct MinIO URL
+        if minio_config['secure']:
+            protocol = 'https'
+        else:
+            protocol = 'http'
+        file_url = f"{protocol}://{minio_config['endpoint']}/{minio_config['bucket_name']}/{audio_file_path}"
+        
         patient_name = get_file_name_and_extension(file_metadata["filename"])["file_name"]
         
         # Clean up temp file
@@ -68,7 +75,11 @@ async def handle_user_file_case(user_id: str, file_name: str) -> Tuple[str, str,
     """Handle the case when user_id and file_name are provided."""
     audio_file = await fetch_and_store_audio(user_id, file_name)
     file_id, audio_file_path = audio_file["file_id"], audio_file["new_file_name"]
-    file_url = f"https://storage.googleapis.com/{cloud_details['bucket_name']}/{audio_file_path}"
+    
+    # Construct MinIO URL using internal container endpoint
+    protocol = 'http'  # Always use HTTP for internal container communication
+    file_url = f"{protocol}://{minio_config['endpoint']}/{minio_config['bucket_name']}/{audio_file_path}"
+    
     patient_name = get_file_name_and_extension(file_name)["file_name"]
     
     return file_id, audio_file_path, file_url, patient_name
@@ -76,15 +87,19 @@ async def handle_user_file_case(user_id: str, file_name: str) -> Tuple[str, str,
 async def process_audio_output(llama3_json_output: Dict[str, Any], file_id: str, user_id: str, 
                              file_name: str, audio_file_path: str) -> Dict[str, Any]:
     """Process and save the audio output."""
-    transcript_file_path = generate_output_filename(
+    # Generate and upload output file - generate_output_filename now handles the upload
+    transcript_url = generate_output_filename(
         llama3_json_output, file_id, user_id, file_name
     )
-    upload_file_to_bucket(transcript_file_path, transcript_file_path)
     
+    # Clean up any remaining local files
     remove_local_file(audio_file_path)
-    remove_local_file(transcript_file_path)
     
-    return {"file_id": file_id, "llama3_json_output": llama3_json_output}
+    return {
+        "file_id": file_id, 
+        "llama3_json_output": llama3_json_output,
+        "transcript_url": transcript_url
+    }
 
 async def process_audio_background(
     file_id: Optional[str] = None,
