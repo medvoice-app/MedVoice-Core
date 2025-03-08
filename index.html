@@ -144,7 +144,6 @@
         <!-- Nurses Section -->
         <section class="section-container">
             <h2 class="section-title">Nurses Management</h2>
-            <button class="btn-success mb-4" onclick="openCreateNurseModal()">Add Nurse</button>
             <div class="overflow-x-auto rounded-lg shadow">
                 <table class="min-w-full bg-white">
                     <thead>
@@ -240,9 +239,9 @@
             </div>
         </section>
     
-        <!-- Audio Upload Section -->
+        <!-- Upload and Process Audio File Section -->
         <section class="section-container">
-            <h2 class="section-title">Audio File Upload</h2>
+            <h2 class="section-title">Upload and Process Audio File</h2>
             <form id="uploadAudioForm" class="grid grid-cols-1 gap-4 mb-6">
                 <div>
                     <label for="audioUserId" class="block mb-1 font-medium">User ID:</label>
@@ -283,6 +282,35 @@
             <!-- Add spinner -->
             <div id="audioUploadSpinner" class="flex justify-center mt-4" style="display: none;">
                 <img src="./assets/Bean Eater@1x-1.0s-200px-200px.gif" alt="Loading..." />
+            </div>
+        </section>
+        
+        <!-- JSON Transcript Viewer Section -->
+        <section class="section-container">
+            <h2 class="section-title">JSON Transcript Viewer</h2>
+            <div class="grid grid-cols-1 gap-4 mb-6">
+                <div>
+                    <label for="transcript-user-id" class="block mb-1 font-medium">User ID:</label>
+                    <input id="transcript-user-id" 
+                           name="transcript-user-id"
+                           autocomplete="off"
+                           class="input-field" 
+                           type="text" 
+                           placeholder="Enter User ID">
+                </div>
+                <div>
+                    <button class="btn-primary" id="search-transcripts-button">Search Transcripts</button>
+                </div>
+            </div>
+            
+            <div id="transcript-spinner" class="flex justify-center" style="display: none;">
+                <img src="./assets/Bean Eater@1x-1.0s-200px-200px.gif" alt="Loading..." />
+            </div>
+            
+            <div id="transcript-error" class="mt-4 p-4 bg-red-100 text-red-700 rounded-md" style="display: none;"></div>
+            
+            <div id="transcript-results" class="mt-4">
+                <!-- Transcript results will be displayed here -->
             </div>
         </section>
     
@@ -347,6 +375,7 @@
     <script src="static/js/rag-system.js"></script>
     <script src="static/js/llm-pipeline.js"></script>
     <script src="static/js/audio-upload.js"></script>
+    <script src="static/js/transcript-viewer.js"></script>
 </body>
 </html>
 
