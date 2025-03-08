@@ -8,24 +8,62 @@ MedVoice is a Mobile Application that supports converting Speech to Medical Docu
 ## Project Architecture
 
 ```mermaid
-sequenceDiagram
-    actor Doctor
-    participant Mobile as Mobile App
-    participant Backend as FastAPI Backend
-    participant LLM as LLM Service
-    participant DB as Database
-    participant Storage as Cloud Storage
+flowchart TB
+    subgraph "Client Layer"
+        MobileApp["Mobile Application (Doctor Interface)"]
+    end
 
-    Doctor->>Mobile: Records patient conversation
-    Mobile->>Backend: Uploads audio file
-    Backend->>Storage: Stores audio file
-    Backend->>Backend: Processes audio with Whisper + Llama
-    Backend->>LLM: Sends transcription for analysis
-    LLM->>Backend: Returns medical documentation
-    Backend->>DB: Stores documentation
-    Backend->>Mobile: Returns formatted documentation
-    Mobile->>Doctor: Displays documentation
-    Doctor->>Mobile: Reviews
+    subgraph "API Layer"
+        FastAPI["FastAPI Backend (8000)"]
+        APIEndpoints["API Endpoints (/api/v1/*)"]
+        Middleware["Authentication Middleware"]
+    end
+
+    subgraph "Core Services"
+        AudioProcessor["Audio Processing (Whisper)"]
+        LLMService["LLM Services (Llama3)"]
+        RAGSystem["RAG System (Embeddings)"]
+    end
+
+    subgraph "Data Layer"
+        PostgreSQL[(PostgreSQL Database)]
+        VectorStore[(PGVector Embeddings)]
+        MinIO[(MinIO Object Storage)]
+    end
+
+    subgraph "Worker Layer"
+        Worker["Async Workers"]
+    end
+
+    MobileApp -->|HTTP/REST| FastAPI
+    FastAPI --> APIEndpoints
+    APIEndpoints --> Middleware
+    
+    Middleware -->|Process Audio| AudioProcessor
+    Middleware -->|Generate Documentation| LLMService
+    Middleware -->|Retrieve Context| RAGSystem
+
+    AudioProcessor -->|Store Audio| MinIO
+    AudioProcessor -->|Transcribe| LLMService
+    LLMService -->|Store Results| PostgreSQL
+    RAGSystem -->|Query Vectors| VectorStore
+    
+    Worker -->|Background Tasks| AudioProcessor
+    Worker -->|Background Tasks| LLMService
+    
+    PostgreSQL -->|Data Access| Middleware
+    MinIO -->|File Access| Middleware
+    VectorStore -->|Embeddings| RAGSystem
+
+    classDef primary fill:#3498db,stroke:#2980b9,color:white
+    classDef secondary fill:#2ecc71,stroke:#27ae60,color:white
+    classDef storage fill:#e74c3c,stroke:#c0392b,color:white
+    classDef worker fill:#f39c12,stroke:#d35400,color:white
+
+    class MobileApp,FastAPI,APIEndpoints primary
+    class AudioProcessor,LLMService,RAGSystem,Middleware secondary
+    class PostgreSQL,VectorStore,MinIO storage
+    class Worker worker
 ```
 
 ## Project Structure
