@@ -2,10 +2,6 @@ SHELL := /bin/bash
 DOCKER_FLAGS := up --build --scale worker=1
 GPU ?= false
 
-# Variables
-NGROK_CONFIG_PATH := /home/laansdole/.config/ngrok/ngrok.yml
-NGROK_EXAMPLE_FILE := $(NGROK_CONFIG_PATH).example
-
 # Load environment variables from .env
 ifneq (,$(wildcard .env))
     include .env
@@ -16,7 +12,7 @@ endif
 # INSTALLATION COMMANDS
 ###############################################################################
 
-# Run the main installation script to set up project dependencies
+# Install basic system dependencies (Docker, Python, etc.)
 .PHONY: install
 install: 
 	@echo "Running installation script..."
@@ -24,43 +20,22 @@ install:
 	@./scripts/install.sh
 
 # Create a Python virtual environment and install project dependencies 
-.PHONY: venv-install
-venv-install: install
+.PHONY: setup
+setup:
 	# Ensure Python3 and virtual environment
 	@which python3 > /dev/null && python3 -m venv venv || python -m venv venv
 	@echo "Setting up virtual environment and installing dependencies..."
 	@bash -c "source venv/bin/activate && pip install -r requirements.txt && poetry install"
-	@echo "Dependencies installed successfully."
+	@echo "Creating default .env file..."
+	@cp -n .env.example .env || true
+	@echo "Setup completed successfully."
 
-# Complete setup: install dependencies and create environment file
-.PHONY: venv-all
-venv-all: venv-install env-secrets
-
-# Install NVIDIA toolkit for GPU support
+# Install NVIDIA toolkit for GPU support (optional)
 .PHONY: nvidia
 nvidia: 
-	@echo "Running installation script..."
+	@echo "Installing NVIDIA toolkit for GPU support..."
 	@chmod +x scripts/install_nvidia_toolkit.sh
 	@./scripts/install_nvidia_toolkit.sh
-
-###############################################################################
-# ENVIRONMENT SETUP
-###############################################################################
-
-# Create environment file from template and open it for editing
-.PHONY: env-secrets
-env-secrets:
-	@echo "Creating .env file..."
-	@envsubst < .env.example > .env
-	@echo ".env file has been created!"
-	@vi .env
-
-# Create ngrok configuration file from template
-.PHONY: ngrok
-ngrok:
-	@echo "Creating ngrok.yml configuration file..."
-	@envsubst < ngrok.example.yml > ngrok.yml
-	@echo "ngrok.yml file has been created!"
 
 ###############################################################################
 # DOCKER COMMANDS
@@ -101,7 +76,7 @@ down:
 # UTILITY COMMANDS
 ###############################################################################
 
-# Verify system dependencies and required configuration files
+# Verify system dependencies
 .PHONY: check
 check:
 	@echo "Checking system dependencies and required files..."
@@ -110,14 +85,31 @@ check:
 	@echo ""
 	@which docker > /dev/null && echo "✔ Docker is installed." || echo "✘ Docker is not installed. Please install it."
 	@echo ""
-	@which python > /dev/null && echo "✔ Python is installed." || echo "✘ Python is not installed. Please install it. Ignore this if you have python3 installed."
+	@which python3 > /dev/null && echo "✔ Python3 is installed." || echo "✘ Python3 is not installed. Please install it."
 	@echo ""
-	@which ngrok > /dev/null && echo "✔ ngrok is installed." || echo "✘ ngrok is not installed. Please install it."
-	@echo ""
-	@test -f .env && echo "✔ .env file exists." || echo "✘ .env file is missing. Please see .env.example for reference and add it."
-	@echo ""
-	@test -f google-credentials.json && echo "✔ google-credentials.json file exists." || echo "✘ google-credentials.json file is missing. Please see google-credentials.example.json for reference and add it."
-	@echo ""
-	@test -f ngrok.yml && echo "✔ ngrok.yml file exists." || echo "✘ ngrok.yml file is missing. Please see ngrok.example.yml for reference and add it."
-	@echo ""
-	@echo "System check complete. If you are running the project in Ubuntu, run make install to setup the project."
+	@echo "System check complete. If you are missing dependencies, run 'make install' to install them."
+
+# Configure ngrok for remote access (optional)
+.PHONY: ngrok
+ngrok:
+	@echo "Creating ngrok configuration..."
+	@cp -n ngrok.example.yml ngrok.yml || true
+	@echo "Edit ngrok.yml with your configuration details."
+
+# Export dependencies to requirements.txt
+.PHONY: export
+export:
+	@echo "Exporting dependencies to requirements.txt..."
+	@poetry export -f requirements.txt --output requirements.txt --without-hashes
+
+# Import dependencies from requirements.txt to poetry
+.PHONY: import
+import:
+	@echo "Importing dependencies from requirements.txt..."
+	@python3 scripts/pip_to_poetry_pkg.py
+
+# Clean temporary files and directories
+.PHONY: clean
+clean:
+	@echo "Cleaning temporary files and directories..."
+	@python3 scripts/empty_dir.py

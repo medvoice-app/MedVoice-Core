@@ -1,9 +1,6 @@
 # MedVoice Core System
 
-This is the backend for the MedVoice project, which includes the ML pipeline for Whisper-Diarization, Llama3 models, and others LLMs.
-
-### What is MedVoice?
-MedVoice is a Mobile Application that supports converting Speech to Medical Documentation format in real-time!
+MedVoice is an AI-powered healthcare documentation system that automatically generates clinical documentation from doctor-patient conversations.
 
 ## Project Architecture
 
@@ -90,133 +87,106 @@ MedVoice-FastAPI/
     └── js/                 # JavaScript files
 ```
 
-## *Before you start*
-1. This `README` assumes that your machine is Debian-based. Please find the equivalent commands if you are running on a Windows or other OS.
-2. This `README` assumes that your machine has enough GPU resources to run `nomic-embed-text` Ollama model. Please find the equivalent GPU Cloud Instance if your local does not have enough resources.
-3. Make sure that you have turn off your VPN.
-
-Once the application is running, the complete API documentation is available at:
-- Swagger UI: `http://localhost:8000/docs`
-
-## Build Instructions
-
-To build the project locally, follow the steps below:
+## Quick Start
 
 ### Prerequisites
-Ensure the following dependencies are installed on your machine:
-- Python 3
-- Docker
-- Docker Compose
-- For remote access: using [`ngrok` command](https://ngrok.com/docs/getting-started/)
-- `make` command
-- Optional for Debian-based GPU: `make nvidia`
+- Docker and Docker Compose
+- Make
+- Git
 
-### Steps to Set Up
+### Local Development Setup
 
-1. **Clone the repository to your local machine:**
-    ```shell
-    git clone https://github.com/MedVoice-RMIT-CapStone-2024/MedVoice-FastAPI.git
-    cd MedVoice-FastAPI
-    ```
+1. **Clone the repository:**
+   ```shell
+   git clone https://github.com/MedVoice-RMIT-CapStone-2024/MedVoice-FastAPI.git
+   cd MedVoice-FastAPI
+   ```
 
-2. **Install `make` command (if not already installed):**
+2. **Verify dependencies:**
+   ```shell
+   make check
+   ```
 
-3. **Check for missing dependencies and configuration files:**
-    ```shell
-    make check
-    ```
-    *Resolve any missing dependencies or files as indicated in the output with Step 4*
+3. **Set up environment:**
+   ```shell
+   make venv-all
+   ```
+   This command creates a Python virtual environment, installs dependencies, and generates a default `.env` file.
 
-4. **For Debian-based OS, set up the Python virtual environment and install dependencies:**
-    ```shell
-    make venv-all
-    ```
+4. **Start the application:**
+   ```shell
+   make up
+   ```
+   For GPU acceleration (if available):
+   ```shell
+   make GPU=true up
+   ```
 
-5. **Choose your deployment mode:**
+5. **Access the application:**
+   - Web interface: http://localhost:8000
+   - API documentation: http://localhost:8000/docs
 
-   a. **For local development:**
-   - In `app/core/app_config.py`, ensure `ON_LOCALHOST` is set to 1:
-     ```python
-     ON_LOCALHOST = 1
-     ```
+## Additional Configuration
 
-   b. **For remote access (using ngrok):**
-   - In `app/core/app_config.py`, ensure `ON_LOCALHOST` is set to 0:
-     ```python
-     ON_LOCALHOST = 0
-     ```
-   - Before running the command below, ensure you have a `.env` file in the root directory with the following variables:
-     ```env
-     NGROK_AUTH_TOKEN=your-auth-token
-     NGROK_API_KEY=your-api-key (not API ID)
-     NGROK_EDGE=your-edge-label
-     NGROK_TUNNEL=your-tunnel-name
-     ```
-   - Run the following command:
-     ```shell
-     make ngrok
-     ```
+### Environment Variables
 
-6. **Run the project with docker compose**
-- If you are using a GPU/CPU, run the following command:
-    ```shell
-    # For GPU
-    make GPU=true up
-    # For CPU
-    make GPU=false up
-    ```
-
-7. **[Optional] Additional utility options:**
-- Export dependencies from `poetry.lock` to `requirements.txt`: 
-    - `poe export`
-- Import dependencies from `requirements.txt` to `poetry.lock`: 
-    - `poe import`
-        
-## Required Environment Variables
-
-Create an `.env` file in the project root with the following variables:
+The basic configuration is handled automatically, but you can modify the following variables in your `.env` file if needed:
 
 ```env
-# Ngrok configuration (for remote access)
-NGROK_AUTH_TOKEN=your-auth-token
-NGROK_API_KEY=your-api-key
-NGROK_EDGE=your-edge-label
-NGROK_TUNNEL=your-tunnel-name
+# MinIO configuration
+MINIO_ENDPOINT=minio:9000
+MINIO_EXTERNAL_ENDPOINT=localhost:9000
+MINIO_ACCESS_KEY=minioadmin
+MINIO_SECRET_KEY=minioadmin
+MINIO_SECURE=false
+MINIO_BUCKET_NAME=medvoice-storage
 
-# Google Cloud configuration
-GCLOUD_PROJECT_ID=your-project-id
-GCLOUD_STORAGE_BUCKET=your-bucket-name
-
-# Ollama configuration (default is fine for local development)
-OLLAMA_BASE_URL=http://host.docker.internal:11434
-
-# Replicate API key
+# For AI model integration
 REPLICATE_API_TOKEN=your-replicate-api-token
+HF_ACCESS_TOKEN=your-hugging-face-api-token
+
+# Ollama configuration
+OLLAMA_BASE_URL=http://host.docker.internal:11434
 ```
 
-## Obtaining the Replicate API Key
+### Remote Access Configuration (Optional)
 
-To use the Replicate API, follow these steps:
+For remote access using ngrok:
 
-1. Visit the Replicate website at [https://www.replicate.ai](https://www.replicate.ai) and sign in.
-2. Generate a new API key in your account settings.
-3. Add the API key to the `.env` file as shown above.
+1. Update `app/core/app_config.py`:
+   ```python
+   ON_LOCALHOST = 0
+   ```
 
-## Setup your `google-credentials.json` file
+2. Configure ngrok in your `.env` file:
+   ```env
+   NGROK_AUTH_TOKEN=your-auth-token
+   NGROK_API_KEY=your-api-key
+   NGROK_EDGE=your-edge-label
+   NGROK_TUNNEL=your-tunnel-name
+   ```
 
-See [docs/how-to-setup](./docs/how-to-setup-gcp-service-account.md) guide for reference
+3. Generate ngrok configuration:
+   ```shell
+   make ngrok
+   ```
 
-## Configuring ngrok
+## Utility Commands
 
-Run the following command to verify your ngrok configuration file:
+- Stop the application:
+  ```shell
+  make down
+  ```
 
-```shell
-ngrok config check
-```
+- Export dependencies:
+  ```shell
+  make export
+  ```
 
-Use the `make ngrok` command to generate the configuration file automatically.
-
-For more details on ngrok configuration, see the [Ngrok Documentation](https://ngrok.com/docs/agent/config/).
+- Import dependencies:
+  ```shell
+  make import
+  ```
 
 ## License
 
