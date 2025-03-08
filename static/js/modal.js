@@ -13,19 +13,3 @@ function openEditNurseModal() {
 function closeEditNurseModal() {
     document.getElementById('editNurseModal').classList.add('hidden');
 }
-
-function openCreatePatientModal() {
-    document.getElementById('createPatientModal').classList.remove('hidden');
-}
-
-function closeCreatePatientModal() {
-    document.getElementById('createPatientModal').classList.add('hidden');
-}
-
-function openEditPatientModal() {
-    document.getElementById('editPatientModal').classList.remove('hidden');
-}
-
-function closeEditPatientModal() {
-    document.getElementById('editPatientModal').classList.add('hidden');
-}

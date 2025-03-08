@@ -7,10 +7,8 @@ document.getElementById('ask-button').addEventListener('click', async function()
     spinner.style.display = 'block';
     this.style.display = 'none';
 
-    const endpoint = `ask_v2/${userId}`;
-
     try {
-        const response = await fetch(`https://medvoice-fastapi.ngrok.dev/${endpoint}`, {
+        const response = await fetch(`${apiUrl}ask_v2/${userId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -18,6 +16,7 @@ document.getElementById('ask-button').addEventListener('click', async function()
             body: JSON.stringify({ question: question, source_type: sourceType }),
         });
         const data = await response.json();
+        
         const conversation = document.getElementById('conversation');
         conversation.value += 'User: ' + question + '\n';
         conversation.value += 'RAG System: ' + data.response + '\n\n';

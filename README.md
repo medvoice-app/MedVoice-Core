@@ -3,12 +3,100 @@
 This is the backend for the MedVoice project, which includes the ML pipeline for Whisper-Diarization, Llama3 models, and others LLMs.
 
 ### What is MedVoice?
-MedVoice is a Mobile Application that supports coverting Speech to Medical Documentation format in real-time!
+MedVoice is a Mobile Application that supports converting Speech to Medical Documentation format in real-time!
+
+## Project Architecture
+
+```mermaid
+flowchart TB
+    subgraph "Client Layer"
+        MobileApp["Mobile Application (Doctor Interface)"]
+    end
+
+    subgraph "API Layer"
+        FastAPI["FastAPI Backend (8000)"]
+        APIEndpoints["API Endpoints (/api/v1/*)"]
+        Middleware["Authentication Middleware"]
+    end
+
+    subgraph "Core Services"
+        AudioProcessor["Audio Processing (Whisper)"]
+        LLMService["LLM Services (Llama3)"]
+        RAGSystem["RAG System (Embeddings)"]
+    end
+
+    subgraph "Data Layer"
+        PostgreSQL[(PostgreSQL Database)]
+        VectorStore[(PGVector Embeddings)]
+        MinIO[(MinIO Object Storage)]
+    end
+
+    subgraph "Worker Layer"
+        Worker["Async Workers"]
+    end
+
+    MobileApp -->|HTTP/REST| FastAPI
+    FastAPI --> APIEndpoints
+    APIEndpoints --> Middleware
+    
+    Middleware -->|Process Audio| AudioProcessor
+    Middleware -->|Generate Documentation| LLMService
+    Middleware -->|Retrieve Context| RAGSystem
+
+    AudioProcessor -->|Store Audio| MinIO
+    AudioProcessor -->|Transcribe| LLMService
+    LLMService -->|Store Results| PostgreSQL
+    RAGSystem -->|Query Vectors| VectorStore
+    
+    Worker -->|Background Tasks| AudioProcessor
+    Worker -->|Background Tasks| LLMService
+    
+    PostgreSQL -->|Data Access| Middleware
+    MinIO -->|File Access| Middleware
+    VectorStore -->|Embeddings| RAGSystem
+
+    classDef primary fill:#3498db,stroke:#2980b9,color:white
+    classDef secondary fill:#2ecc71,stroke:#27ae60,color:white
+    classDef storage fill:#e74c3c,stroke:#c0392b,color:white
+    classDef worker fill:#f39c12,stroke:#d35400,color:white
+
+    class MobileApp,FastAPI,APIEndpoints primary
+    class AudioProcessor,LLMService,RAGSystem,Middleware secondary
+    class PostgreSQL,VectorStore,MinIO storage
+    class Worker worker
+```
+
+## Project Structure
+
+```
+MedVoice-FastAPI/
+├── app/                    # Main application code
+│   ├── api/                # API endpoints
+│   │   └── v1/             # API version 1
+│   ├── core/               # Core configuration
+│   ├── crud/               # Database CRUD operations
+│   ├── db/                 # Database connection and models
+│   ├── llm/                # LLM integration code
+│   ├── models/             # Database models
+│   ├── schemas/            # Pydantic schemas
+│   └── utils/              # Utility functions
+├── assets/                 # Static assets
+├── audios/                 # Audio file storage
+├── docker/                 # Docker configuration files
+├── docs/                   # Documentation
+├── outputs/                # Output file storage
+├── scripts/                # Utility scripts
+└── static/                 # Static frontend files
+    └── js/                 # JavaScript files
+```
 
 ## *Before you start*
-1. This `README` assumes that your machine is Debian-based. Please find the equivalent commands if you are running on a Windows machine or other OS.
+1. This `README` assumes that your machine is Debian-based. Please find the equivalent commands if you are running on a Windows or other OS.
 2. This `README` assumes that your machine has enough GPU resources to run `nomic-embed-text` Ollama model. Please find the equivalent GPU Cloud Instance if your local does not have enough resources.
 3. Make sure that you have turn off your VPN.
+
+Once the application is running, the complete API documentation is available at:
+- Swagger UI: `http://localhost:8000/docs`
 
 ## Build Instructions
 
@@ -84,16 +172,35 @@ Ensure the following dependencies are installed on your machine:
 - Import dependencies from `requirements.txt` to `poetry.lock`: 
     - `poe import`
         
+## Required Environment Variables
+
+Create an `.env` file in the project root with the following variables:
+
+```env
+# Ngrok configuration (for remote access)
+NGROK_AUTH_TOKEN=your-auth-token
+NGROK_API_KEY=your-api-key
+NGROK_EDGE=your-edge-label
+NGROK_TUNNEL=your-tunnel-name
+
+# Google Cloud configuration
+GCLOUD_PROJECT_ID=your-project-id
+GCLOUD_STORAGE_BUCKET=your-bucket-name
+
+# Ollama configuration (default is fine for local development)
+OLLAMA_BASE_URL=http://host.docker.internal:11434
+
+# Replicate API key
+REPLICATE_API_TOKEN=your-replicate-api-token
+```
+
 ## Obtaining the Replicate API Key
 
 To use the Replicate API, follow these steps:
 
 1. Visit the Replicate website at [https://www.replicate.ai](https://www.replicate.ai) and sign in.
 2. Generate a new API key in your account settings.
-3. Add the API key to the `.env` file:
-    ```env
-    REPLICATE_API_KEY=<YOUR_API_KEY>
-    ```
+3. Add the API key to the `.env` file as shown above.
 
 ## Setup your `google-credentials.json` file
 

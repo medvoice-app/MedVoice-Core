@@ -1,72 +1,84 @@
-document.getElementById('audioForm').addEventListener('submit', function(event) {
+document.getElementById('audioForm').addEventListener('submit', function (event) {
     event.preventDefault();
 
-    var fileId = document.getElementById('fileId').value;
-    var fileExtension = document.getElementById('fileExtension').value;
-    var userId = document.getElementById('userId').value;
-    var fileName = document.getElementById('fileName').value;
+    const userId = document.getElementById('userId').value;
+    const params = new URLSearchParams({
+        file_id: document.getElementById('fileId').value,
+        file_extension: document.getElementById('fileExtension').value,
+        file_name: document.getElementById('fileName').value
+    }).toString();
 
-    const url = new URL(`https://medvoice-fastapi.ngrok.dev/process_audio_v2/${userId}`);
-
-    if (fileId) url.searchParams.append('file_id', fileId);
-    if (fileExtension) url.searchParams.append('file_extension', fileExtension);
-    if (fileName) url.searchParams.append('file_name', fileName);
-
+    const url = `${apiUrl}process_audio_v2/${userId}?${params}`;
     processAudioRequest(url);
 });
 
-function processAudioRequest(url) {
-    fetch(url, { method: 'POST' })
-        .then(response => response.json())
-        .then(data => createTaskRow(data))
-        .catch(error => {
-            console.error('Error processing audio:', error);
-            alert('An error occurred while processing the audio.');
-        });
+// Update the original usage in llm-pipeline.js
+async function processAudioRequest(url) {
+    try {
+        const response = await fetch(url, { method: 'POST' });
+        const data = await response.json();
+        createTaskRow(data, 'taskTable');  // Explicitly specify default table
+    } catch (error) {
+        console.error('Error processing audio:', error);
+        alert('An error occurred while processing the audio.');
+    }
 }
 
-function createTaskRow(data) {
+// Updated to accept tableId parameter
+function createTaskRow(data, tableId = 'taskTable') {
+    const table = document.getElementById(tableId);
+    if (!table) {
+        console.error(`Table with ID ${tableId} not found`);
+        return;
+    }
+
+    const tbody = table.getElementsByTagName('tbody')[0];
+    if (!tbody) {
+        console.error(`No tbody found in table ${tableId}`);
+        return;
+    }
+
     const tr = document.createElement('tr');
     const td1 = document.createElement('td');
     const td2 = document.createElement('td');
-    
+
     td1.textContent = data.task_id;
     td1.className = "border px-6 py-4";
-    
+
     td2.className = "border px-6 py-4";
-    
+
     const checkStatusButton = createCheckStatusButton(data.task_id);
     td2.appendChild(checkStatusButton);
-    
+
     tr.appendChild(td1);
     tr.appendChild(td2);
-    document.getElementById('taskTable').getElementsByTagName('tbody')[0].appendChild(tr);
+    tbody.appendChild(tr);
 }
 
 function createCheckStatusButton(taskId) {
     const button = document.createElement('button');
     button.textContent = 'Check Status';
-    button.className = "bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded text-lg";
-    
+    button.className = "status-button";  // Use our custom class
+
     button.addEventListener('click', () => checkTaskStatus(taskId, button));
-    
+
     return button;
 }
 
-function checkTaskStatus(taskId, button) {
-    fetch('https://medvoice-fastapi.ngrok.dev/get_audio_task/' + taskId)
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'SUCCESS') {
-                handleSuccessStatus(data, button);
-            } else {
-                alert('Task Status: ' + data.status);
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching task result:', error);
-            alert('An error occurred. Please try again.');
-        });
+async function checkTaskStatus(taskId, button) {
+    try {
+        const response = await fetch(`${apiUrl}get_audio_task/${taskId}`);
+        const data = await response.json();
+
+        if (data.status === 'SUCCESS') {
+            handleSuccessStatus(data, button);
+        } else {
+            alert('Task Status: ' + data.status);
+        }
+    } catch (error) {
+        console.error('Error fetching task result:', error);
+        alert('An error occurred. Please try again.');
+    }
 }
 
 function handleSuccessStatus(data, button) {
@@ -80,7 +92,7 @@ function createJsonModal(jsonData) {
     const closeButton = createCloseButton(modal);
     const table = createJsonTable(jsonData);
     const viewAsTextBtn = createViewAsTextButton(jsonData, table);
-    
+
     modalContent.appendChild(closeButton);
     modalContent.appendChild(table);
     modalContent.appendChild(viewAsTextBtn);
@@ -89,13 +101,6 @@ function createJsonModal(jsonData) {
 }
 
 // Helper functions for modal creation
-function createModalStructure() {
-    const modal = document.createElement('div');
-    modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full';
-    modal.id = 'jsonModal';
-    return modal;
-}
-
 function createModalStructure() {
     const modal = document.createElement('div');
     modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full';
@@ -129,13 +134,13 @@ function createTableFromJSON(obj, parent, indent = 0) {
         const tr = document.createElement('tr');
         const tdKey = document.createElement('td');
         const tdValue = document.createElement('td');
-        
+
         tdKey.className = 'px-4 py-2 border border-gray-300 font-semibold';
         tdValue.className = 'px-4 py-2 border border-gray-300';
-        
+
         tdKey.style.paddingLeft = `${indent * 20}px`;
         tdKey.textContent = key;
-        
+
         if (typeof obj[key] === 'object' && obj[key] !== null) {
             parent.appendChild(tr);
             tr.appendChild(tdKey);
@@ -153,15 +158,15 @@ function createTableFromJSON(obj, parent, indent = 0) {
 function createViewAsTextButton(jsonData, table) {
     const viewAsTextBtn = document.createElement('button');
     viewAsTextBtn.textContent = 'View as Text';
-    viewAsTextBtn.className = 'mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded';
-    
+    viewAsTextBtn.className = 'json-button';  // Use our custom class
+
     viewAsTextBtn.onclick = () => {
         const formattedText = JSON.stringify(jsonData, null, 2);
         const textArea = document.createElement('textarea');
         textArea.value = formattedText;
         textArea.className = 'w-full h-96 mt-4 p-2 font-mono text-sm border rounded';
         textArea.readOnly = true;
-        
+
         table.replaceWith(textArea);
         viewAsTextBtn.textContent = 'View as Table';
         viewAsTextBtn.onclick = () => {
@@ -170,7 +175,7 @@ function createViewAsTextButton(jsonData, table) {
             viewAsTextBtn.onclick = () => viewAsTextBtn.click();
         };
     };
-    
+
     return viewAsTextBtn;
 }
 

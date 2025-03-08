@@ -19,3 +19,8 @@ class AudioExtension(str, Enum):
 class Question(BaseModel):
     question: str
     source_type: SourceType
+
+class AudioUploadResponse(BaseModel):
+    message: str
+    task_id: str
+    filename: str

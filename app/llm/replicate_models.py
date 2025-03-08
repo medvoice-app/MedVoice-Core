@@ -62,20 +62,74 @@ async def llama3_generate_medical_json(prompt: str) -> Dict[str, Any]:
         print(f"Raw output: {result}")
         return {"error": "Failed to parse JSON", "raw_output": result}
 
-async def whisper_diarization(file_url: str):
-    output = replicate.run(
-        "vaibhavs10/incredibly-fast-whisper:3ab86df6c8f54c11309d4d1f930ac292bad43ace52d10c80d87eb258b3c9f79c",
-        input={
-            "task": "transcribe",
-            "audio": file_url,
-            "hf_token": HF_ACCESS_TOKEN,
-            "language": "None",
-            "timestamp": "word",
-            "batch_size": 64,
-            "diarise_audio": True
-        }
-    )
-    return output
+async def whisper_diarization(file_url_or_path: str):
+    """
+    Process audio using Whisper model.
+    
+    Args:
+        file_url_or_path: Can be either a URL to an audio file or a local file path
+    
+    Returns:
+        JSON output from the whisper model
+    """
+    import os
+    from ..utils.storage_helpers import download_file, extract_path_from_url
+    
+    local_file_path = None
+    try:
+        # Check if this is a URL or local path
+        is_url = file_url_or_path.startswith('http://') or file_url_or_path.startswith('https://')
+        
+        if is_url and 'minio' in file_url_or_path:
+            # This is a MinIO URL, need to download the file
+            object_name = extract_path_from_url(file_url_or_path)
+            if not object_name:
+                raise ValueError(f"Could not extract object name from URL: {file_url_or_path}")
+                
+            # Download the file to a temporary location
+            local_file_path = f"temp_audio_{os.path.basename(object_name)}"
+            download_file(object_name, local_file_path)
+            
+            # Use local file for processing
+            with open(local_file_path, "rb") as f:
+                output = replicate.run(
+                    "vaibhavs10/incredibly-fast-whisper:3ab86df6c8f54c11309d4d1f930ac292bad43ace52d10c80d87eb258b3c9f79c",
+                    input={
+                        "task": "transcribe",
+                        "audio": f,  # Pass file object directly
+                        "hf_token": HF_ACCESS_TOKEN,
+                        "language": "None",
+                        "timestamp": "word",
+                        "batch_size": 64,
+                        "diarise_audio": True
+                    }
+                )
+        else:
+            # This is either a non-MinIO URL or a local file path
+            # Replicate can handle both public URLs and local files
+            output = replicate.run(
+                "vaibhavs10/incredibly-fast-whisper:3ab86df6c8f54c11309d4d1f930ac292bad43ace52d10c80d87eb258b3c9f79c",
+                input={
+                    "task": "transcribe",
+                    "audio": file_url_or_path,
+                    "hf_token": HF_ACCESS_TOKEN,
+                    "language": "None",
+                    "timestamp": "word",
+                    "batch_size": 64,
+                    "diarise_audio": True
+                }
+            )
+            
+        return output
+    
+    finally:
+        # Clean up the temporary file if created
+        if local_file_path and os.path.exists(local_file_path):
+            try:
+                os.remove(local_file_path)
+                print(f"Removed temporary file: {local_file_path}")
+            except Exception as e:
+                print(f"Error removing temporary file {local_file_path}: {e}")
 
 async def llama3_generate_medical_summary(output: str) -> str:
     llm = init_replicate()
