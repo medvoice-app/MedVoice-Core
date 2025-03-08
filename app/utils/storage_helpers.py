@@ -293,3 +293,30 @@ def sort_files_by_datetime(files: List[str], pattern=r"(\d{4}-\d{2}-\d{2}_\d{2}-
     
     # Return only the files, sorted
     return [file for file, _ in sorted_files]
+
+async def check_file_exists(storage_path: str) -> bool:
+    """
+    Check if a file exists in MinIO storage.
+    
+    Args:
+        storage_path: Path to the file in MinIO storage
+        
+    Returns:
+        bool: True if file exists, False otherwise
+    """
+    try:
+        # Get MinIO client directly from init_storage_client
+        storage = init_storage_client()
+        client = storage["client"]
+        bucket_name = storage["bucket_name"]
+        
+        # Log the exact path we're checking
+        logging.info(f"Checking if file exists: {bucket_name}/{storage_path}")
+        
+        # Try to get file stats - this will raise an exception if file doesn't exist
+        client.stat_object(bucket_name, storage_path)
+        logging.info(f"File found: {storage_path}")
+        return True
+    except Exception as e:
+        logging.error(f"File verification failed for {storage_path}: {str(e)}")
+        return False

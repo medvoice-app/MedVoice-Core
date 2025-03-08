@@ -17,6 +17,35 @@ minio_config = {
     "external_endpoint": os.getenv("MINIO_EXTERNAL_ENDPOINT", "localhost:9000")  # For external URLs
 }
 
+# Global MinIO client
+minio_client = None
+
+def get_minio_client():
+    """
+    Returns the global MinIO client instance.
+    If the client hasn't been initialized yet, it initializes it.
+    
+    Returns:
+        A configured MinIO client instance
+    """
+    global minio_client
+    
+    if not minio_client:
+        # Initialize the client if it doesn't exist yet
+        from minio import Minio
+        
+        minio_client = Minio(
+            minio_config['endpoint'],
+            access_key=minio_config['access_key'],
+            secret_key=minio_config['secret_key'],
+            secure=minio_config['secure']
+        )
+        
+        # Configure the client to include bucket information
+        minio_client._get_config = lambda: {"bucket_name": minio_config['bucket_name']}
+    
+    return minio_client
+
 # Initialize MinIO client at module level
 try:
     minio_client = Minio(
