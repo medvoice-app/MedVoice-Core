@@ -1,0 +1,98 @@
+/* Custom styles to override Tailwind defaults */
+
+/* Better button contrast */
+.btn-primary {
+    background-color: #2563eb !important;
+    color: white !important;
+    font-weight: bold !important;
+    padding: 0.5rem 1.5rem !important;
+    border-radius: 0.375rem !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+.btn-primary:hover {
+    background-color: #1d4ed8 !important;
+}
+
+.btn-secondary {
+    background-color: #4b5563 !important;
+    color: white !important;
+    font-weight: bold !important;
+    padding: 0.5rem 1.5rem !important;
+    border-radius: 0.375rem !important;
+}
+
+.btn-secondary:hover {
+    background-color: #374151 !important;
+}
+
+.btn-success {
+    background-color: #10b981 !important;
+    color: white !important;
+    font-weight: bold !important;
+    padding: 0.5rem 1.5rem !important;
+    border-radius: 0.375rem !important;
+}
+
+.btn-success:hover {
+    background-color: #059669 !important;
+}
+
+/* Section titles with better contrast */
+.section-title {
+    font-size: 1.875rem !important;
+    font-weight: bold !important;
+    margin-bottom: 1rem !important;
+    color: #1e3a8a !important;
+    border-bottom: 2px solid #3b82f6 !important;
+    padding-bottom: 0.5rem !important;
+}
+
+/* Table headers with better visibility */
+.table-header {
+    background-color: #e5e7eb !important;
+    color: #1f2937 !important;
+    font-weight: bold !important;
+    text-transform: uppercase !important;
+    font-size: 0.875rem !important;
+    letter-spacing: 0.05em !important;
+    padding: 0.75rem 1.5rem !important;
+    text-align: left !important;
+    border-bottom: 2px solid #d1d5db !important;
+}
+
+/* Fix table cell styling */
+td {
+    padding: 0.75rem 1.5rem !important;
+    border-bottom: 1px solid #e5e7eb !important;
+}
+
+/* Status button styling */
+.status-button {
+    background-color: #2563eb !important;
+    color: white !important;
+    font-weight: bold !important;
+    padding: 0.75rem 1.5rem !important;
+    border-radius: 0.375rem !important;
+    font-size: 1rem !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+    display: inline-block !important;
+}
+
+.status-button:hover {
+    background-color: #1d4ed8 !important;
+}
+
+/* JSON view button */
+.json-button {
+    background-color: #2563eb !important;
+    color: white !important;
+    font-weight: bold !important;
+    padding: 0.5rem 1rem !important;
+    border-radius: 0.375rem !important;
+    margin-top: 1rem !important;
+}
+
+.json-button:hover {
+    background-color: #1d4ed8 !important;
+}
