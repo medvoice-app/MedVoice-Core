@@ -1,5 +1,3 @@
-const apiUrl = 'https://medvoice-fastapi.ngrok.dev/';
-
 async function fetchNurses() {
     try {
         const response = await fetch(`${apiUrl}nurses/`);

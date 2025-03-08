@@ -1,6 +1,4 @@
-const apiUrl = 'https://medvoice-fastapi.ngrok.dev/';
-
-document.getElementById('audioForm').addEventListener('submit', function(event) {
+document.getElementById('audioForm').addEventListener('submit', function (event) {
     event.preventDefault();
 
     const userId = document.getElementById('userId').value;
@@ -43,15 +41,15 @@ function createTaskRow(data, tableId = 'taskTable') {
     const tr = document.createElement('tr');
     const td1 = document.createElement('td');
     const td2 = document.createElement('td');
-    
+
     td1.textContent = data.task_id;
     td1.className = "border px-6 py-4";
-    
+
     td2.className = "border px-6 py-4";
-    
+
     const checkStatusButton = createCheckStatusButton(data.task_id);
     td2.appendChild(checkStatusButton);
-    
+
     tr.appendChild(td1);
     tr.appendChild(td2);
     tbody.appendChild(tr);
@@ -60,10 +58,10 @@ function createTaskRow(data, tableId = 'taskTable') {
 function createCheckStatusButton(taskId) {
     const button = document.createElement('button');
     button.textContent = 'Check Status';
-    button.className = "bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded text-lg";
-    
+    button.className = "status-button";  // Use our custom class
+
     button.addEventListener('click', () => checkTaskStatus(taskId, button));
-    
+
     return button;
 }
 
@@ -71,7 +69,7 @@ async function checkTaskStatus(taskId, button) {
     try {
         const response = await fetch(`${apiUrl}get_audio_task/${taskId}`);
         const data = await response.json();
-        
+
         if (data.status === 'SUCCESS') {
             handleSuccessStatus(data, button);
         } else {
@@ -94,7 +92,7 @@ function createJsonModal(jsonData) {
     const closeButton = createCloseButton(modal);
     const table = createJsonTable(jsonData);
     const viewAsTextBtn = createViewAsTextButton(jsonData, table);
-    
+
     modalContent.appendChild(closeButton);
     modalContent.appendChild(table);
     modalContent.appendChild(viewAsTextBtn);
@@ -136,13 +134,13 @@ function createTableFromJSON(obj, parent, indent = 0) {
         const tr = document.createElement('tr');
         const tdKey = document.createElement('td');
         const tdValue = document.createElement('td');
-        
+
         tdKey.className = 'px-4 py-2 border border-gray-300 font-semibold';
         tdValue.className = 'px-4 py-2 border border-gray-300';
-        
+
         tdKey.style.paddingLeft = `${indent * 20}px`;
         tdKey.textContent = key;
-        
+
         if (typeof obj[key] === 'object' && obj[key] !== null) {
             parent.appendChild(tr);
             tr.appendChild(tdKey);
@@ -160,15 +158,15 @@ function createTableFromJSON(obj, parent, indent = 0) {
 function createViewAsTextButton(jsonData, table) {
     const viewAsTextBtn = document.createElement('button');
     viewAsTextBtn.textContent = 'View as Text';
-    viewAsTextBtn.className = 'mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded';
-    
+    viewAsTextBtn.className = 'json-button';  // Use our custom class
+
     viewAsTextBtn.onclick = () => {
         const formattedText = JSON.stringify(jsonData, null, 2);
         const textArea = document.createElement('textarea');
         textArea.value = formattedText;
         textArea.className = 'w-full h-96 mt-4 p-2 font-mono text-sm border rounded';
         textArea.readOnly = true;
-        
+
         table.replaceWith(textArea);
         viewAsTextBtn.textContent = 'View as Table';
         viewAsTextBtn.onclick = () => {
@@ -177,7 +175,7 @@ function createViewAsTextButton(jsonData, table) {
             viewAsTextBtn.onclick = () => viewAsTextBtn.click();
         };
     };
-    
+
     return viewAsTextBtn;
 }
 
