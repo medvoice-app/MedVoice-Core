@@ -2,6 +2,12 @@
 
 MedVoice is an AI-powered healthcare documentation system that automatically generates clinical documentation from doctor-patient conversations.
 
+## Project Demo
+
+Watch a demonstration of the MedVoice-FastAPI project:
+
+[![Demo Video](https://img.youtube.com/vi/euxRibBCnwM/0.jpg)](https://www.youtube.com/watch?v=euxRibBCnwM)
+
 ## Project Architecture
 
 ```mermaid
@@ -125,6 +131,8 @@ MedVoice-FastAPI/
 5. **Access the application:**
    - Web interface: http://localhost:8000
    - API documentation: http://localhost:8000/docs
+   - MinIO Storage interface: http://127.0.0.1:9001
+   - Flower Dashboard: http://localhost:5557/workers
 
 ## Additional Configuration
 
