@@ -115,7 +115,7 @@ MedVoice-FastAPI/
 
 3. **Set up environment:**
    ```shell
-   make venv-all
+   make setup
    ```
    This command creates a Python virtual environment, installs dependencies, and generates a default `.env` file.
 
