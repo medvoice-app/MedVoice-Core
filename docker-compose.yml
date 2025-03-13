@@ -24,6 +24,7 @@ services:
 
   minio:
     image: minio/minio:latest
+    pull_policy: always
     ports:
       - "9000:9000" # API
       - "9001:9001" # Web Console
