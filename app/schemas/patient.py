@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import ConfigDict, BaseModel
 from typing import Optional, Dict, Any
 
 class DemographicsOfPatient(BaseModel):
@@ -45,9 +45,7 @@ class NurseBase(BaseModel):
     id: int
     name: str
     email: str
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class Patient(BaseModel):
     id: int
@@ -62,6 +60,4 @@ class Patient(BaseModel):
     note: Optional[str] = None
     nurse_id: int
     nurse: Optional[NurseBase] = None
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
