@@ -30,10 +30,9 @@ jobs:
         virtualenvs-create: true
         virtualenvs-in-project: true
     
-    - name: Export dependencies to requirements.txt
+    - name: Install dependencies with Poetry
       run: |
-        poetry install --no-interaction --no-root
-        make export
+        poetry install --no-interaction
         
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
@@ -45,11 +44,6 @@ jobs:
         key: ${{ runner.os }}-buildx-${{ github.sha }}
         restore-keys: |
           ${{ runner.os }}-buildx-
-        
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
     
     - name: Create .env file
       run: |
@@ -58,21 +52,39 @@ jobs:
         # Add any required environment variables for CI
         echo "CI=true" >> .env
     
-    - name: Start application
+    - name: Start application and run tests
       run: |
         # Export Docker cache location for docker-compose to use
         export DOCKER_BUILDKIT=1
         export COMPOSE_DOCKER_CLI_BUILD=1
         export DOCKER_BUILDKIT_CACHE=/tmp/.buildx-cache
         
-        # Run the application in detached mode
-        make up &
-        # Wait for services to be ready
-        sleep 180
+        # Start the application
+        make up
         
-    - name: Run integration tests
-      run: |
-        make test-api
+        # Wait for services to be ready by checking container status
+        echo "Waiting for containers to be ready..."
+        attempt=1
+        max_attempts=20
+        
+        while [ $attempt -le $max_attempts ]
+        do
+          if docker ps | grep -q "app" && docker ps | grep -q "postgres"; then
+            echo "All required containers are running"
+            break
+          fi
+          echo "Attempt $attempt of $max_attempts: Not all containers are running yet, waiting..."
+          sleep 5
+          ((attempt++))
+        done
+        
+        if [ $attempt -gt $max_attempts ]; then
+          echo "Containers did not start properly within the timeout period"
+          exit 1
+        fi
+        
+        # Run tests inside the Docker container
+        docker exec $(docker ps -q --filter name=app) python -m pytest tests/integration/test_nurse_api.py tests/integration/test_db.py -v
         
     - name: Stop application
       if: always()
