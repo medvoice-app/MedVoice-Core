@@ -80,7 +80,7 @@ down:
 .PHONY: test-api
 test-api:
 	@echo "Running API tests only (excluding LLM tests)..."
-	@bash -c "source venv/bin/activate && python -m pytest tests/integration/test_nurse_api.py tests/integration/test_db.py -v"
+	@bash -c "python -m pytest tests/integration/test_nurse_api.py tests/integration/test_db.py -v"
 
 # Run tests with coverage report excluding LLM tests
 .PHONY: test-coverage-api
