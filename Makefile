@@ -28,7 +28,15 @@ setup:
 	@bash -c "source venv/bin/activate && pip install -r requirements.txt && poetry install"
 	@echo "Creating default .env file..."
 	@cp -n .env.example .env || true
+	@echo "Installing test dependencies..."
+	@$(MAKE) setup-tests
 	@echo "Setup completed successfully."
+
+# Install test dependencies
+.PHONY: setup-tests
+setup-tests:
+	@echo "Installing test dependencies..."
+	@bash -c "pip install pytest pytest-asyncio pytest-cov aiosqlite"
 
 # Install NVIDIA toolkit for GPU support (optional)
 .PHONY: nvidia
@@ -87,12 +95,6 @@ test-api:
 test-coverage-api:
 	@echo "Running API tests with coverage report (excluding LLM tests)..."
 	@bash -c "python -m pytest tests/integration/test_nurse_api.py tests/integration/test_db.py --cov=app --cov-report=term-missing -v"
-
-# Install test dependencies
-.PHONY: setup-tests
-setup-tests:
-	@echo "Installing test dependencies..."
-	@bash -c "pip install pytest pytest-asyncio pytest-cov aiosqlite"
 
 # Run tests with debug info
 .PHONY: test-debug

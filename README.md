@@ -134,6 +134,36 @@ MedVoice-FastAPI/
    - MinIO Storage interface: http://127.0.0.1:9001
    - Flower Dashboard: http://localhost:5557/workers
 
+## Test Commands
+
+### API Integration Tests
+
+To run the API integration tests:
+
+1. First, ensure the application is running:
+
+2. In a separate terminal, run the API tests:
+   ```shell
+   make test-api
+   ```
+
+This will run nurse API tests and database integration tests, excluding LLM tests.
+
+### Test Coverage
+
+To generate a test coverage report for API tests:
+
+```shell
+make test-coverage-api
+```
+### Debug Tests
+
+Run tests with additional debug information:
+
+```shell
+make test-debug
+```
+
 ## Additional Configuration
 
 ### Environment Variables
