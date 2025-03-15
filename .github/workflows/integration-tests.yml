@@ -1,0 +1,72 @@
+name: Integration Tests
+
+on:
+  push:
+    branches: [ main ]
+  release:
+    types: [published]
+
+# Cancel in-progress jobs when new commits are pushed
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  integration-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Ensure make is installed
+      run: |
+        if ! command -v make &> /dev/null; then
+          echo "make command not found, installing build-essential..."
+          sudo apt-get update
+          sudo apt-get install -y build-essential
+        else
+          echo "make is already installed"
+        fi
+        
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+      
+    - name: Cache Docker layers
+      uses: actions/cache@v3
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-buildx-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-buildx-
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Start application
+      run: |
+        # Export Docker cache location for docker-compose to use
+        export DOCKER_BUILDKIT=1
+        export COMPOSE_DOCKER_CLI_BUILD=1
+        export DOCKER_BUILDKIT_CACHE=/tmp/.buildx-cache
+        
+        # Run the application in detached mode
+        make up &
+        # Wait for services to be ready
+        sleep 30
+        
+    - name: Run integration tests
+      run: |
+        make test-api
+        
+    - name: Stop application
+      if: always()
+      run: |
+        make down
