@@ -1,0 +1,33 @@
+# Add labels based on which files are modified in a PR
+# For more information about the syntax, see:
+# https://github.com/actions/labeler
+
+backend:
+- app/**/*
+- main.py
+
+documentation:
+- '**/*.md'
+- docs/**/*
+
+tests:
+- tests/**/*
+
+docker:
+- docker/**/*
+- Dockerfile
+- docker-compose.yml
+
+configuration:
+- '**/*.yml'
+- '**/*.yaml'
+- '**/*.json'
+- .env.example
+
+github-actions:
+- .github/**/*
+
+dependencies:
+- requirements.txt
+- poetry.lock
+- pyproject.toml

@@ -20,7 +20,7 @@ updates:
         update-types:
           - "minor"
           - "patch"
-    target-branch: "bot-updates"
+    target-branch: "main"
 
   - package-ecosystem: "pip"
     directory: "/"

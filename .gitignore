@@ -163,3 +163,4 @@ ngrok.yml
 google-credentials.json
 ollama/ollama/*
 .vscode/
+test.db

@@ -15,7 +15,7 @@ from .core.app_config import ON_LOCALHOST
 from .models.request_enum import *
 from .worker import *
 from .db.init_db import initialize_all_databases
-from .api.v1.api_v1_router import api_router
+from .api.v1.api import api_router
 
 # Determine if running in Docker
 running_in_docker = os.getenv('RUNNING_IN_DOCKER', 'false').lower() == 'true'
@@ -34,7 +34,7 @@ async def lifespan(app: FastAPI):
     # Code to run on shutdown
     print("Shutting down...")
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan, title="MedVoice API")
 
 # Mounting local directory
 app.mount("/static", StaticFiles(directory="/workspace/code/static" if running_in_docker else "static"), name="static")
@@ -50,7 +50,7 @@ app.add_middleware(
 templates = Jinja2Templates(directory=".")
 
 # Include API router
-app.include_router(api_router)
+app.include_router(api_router, prefix="/api/v1")
 
 @app.get("/")
 def index(request: Request):
