@@ -68,7 +68,7 @@ jobs:
         # Run the application in detached mode
         make up &
         # Wait for services to be ready
-        sleep 30
+        sleep 180
         
     - name: Run integration tests
       run: |
