@@ -50,7 +50,8 @@ app.add_middleware(
 templates = Jinja2Templates(directory=".")
 
 # Include API router
-app.include_router(api_router, prefix="/api/v1")
+# app.include_router(api_router, prefix="/api/v1")
+app.include_router(api_router)
 
 @app.get("/")
 def index(request: Request):
