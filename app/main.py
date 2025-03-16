@@ -17,6 +17,9 @@ from .worker import *
 from .db.init_db import initialize_all_databases
 from .api.v1.api import api_router
 
+# Import the configuration at the top level to ensure it's loaded early
+from app.core.config_loader import config
+
 # Determine if running in Docker
 running_in_docker = os.getenv('RUNNING_IN_DOCKER', 'false').lower() == 'true'
 

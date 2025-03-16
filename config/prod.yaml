@@ -1,0 +1,9 @@
+# Production environment configuration
+app:
+  on_localhost: 0
+minio:
+  # In production, external endpoint might differ
+  external_endpoint: "your-prod-minio-endpoint"
+ngrok:
+  # Ngrok details should be provided in environment variables
+  # or configured here for production deployment

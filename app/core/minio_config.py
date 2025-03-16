@@ -1,62 +1,45 @@
-from dotenv import load_dotenv
-import os
 from minio import Minio
-from minio.error import S3Error
 import logging
+from app.core.config_loader import config
 
-# Load environment variables from .env file
-load_dotenv()
-
-# MinIO configuration
+# Create backward compatibility dictionary for existing code
 minio_config = {
-    "endpoint": os.getenv("MINIO_ENDPOINT", "minio:9000"),  # Use container name for Docker
-    "access_key": os.getenv("MINIO_ACCESS_KEY", "minioadmin"),
-    "secret_key": os.getenv("MINIO_SECRET_KEY", "minioadmin"),
-    "secure": False,  # Force HTTP for Docker environment
-    "bucket_name": os.getenv("MINIO_BUCKET_NAME", "medvoice-storage"),
-    "external_endpoint": os.getenv("MINIO_EXTERNAL_ENDPOINT", "localhost:9000")  # For external URLs
+    "endpoint": config.minio.endpoint,
+    "external_endpoint": config.minio.external_endpoint, 
+    "access_key": config.minio.access_key,
+    "secret_key": config.minio.secret_key,
+    "secure": config.minio.secure,
+    "bucket_name": config.minio.bucket_name
 }
 
 # Global MinIO client
 minio_client = None
 
 def get_minio_client():
-    """
-    Returns the global MinIO client instance.
-    If the client hasn't been initialized yet, it initializes it.
-    
-    Returns:
-        A configured MinIO client instance
-    """
     global minio_client
-    
-    if not minio_client:
-        # Initialize the client if it doesn't exist yet
-        from minio import Minio
-        
-        minio_client = Minio(
-            minio_config['endpoint'],
-            access_key=minio_config['access_key'],
-            secret_key=minio_config['secret_key'],
-            secure=minio_config['secure']
-        )
-        
-        # Configure the client to include bucket information
-        minio_client._get_config = lambda: {"bucket_name": minio_config['bucket_name']}
-    
+    if minio_client is None:
+        try:
+            minio_client = Minio(
+                config.minio.endpoint,
+                access_key=config.minio.access_key,
+                secret_key=config.minio.secret_key,
+                secure=config.minio.secure
+            )
+        except Exception as e:
+            logging.error(f"Failed to initialize MinIO client: {e}")
     return minio_client
 
 # Initialize MinIO client at module level
 try:
     minio_client = Minio(
-        minio_config["endpoint"],
-        access_key=minio_config["access_key"],
-        secret_key=minio_config["secret_key"],
-        secure=minio_config["secure"]
+        config.minio.endpoint,
+        access_key=config.minio.access_key,
+        secret_key=config.minio.secret_key,
+        secure=config.minio.secure
     )
     
     # Ensure the bucket exists
-    bucket_name = minio_config["bucket_name"]
+    bucket_name = config.minio.bucket_name
     if not minio_client.bucket_exists(bucket_name):
         minio_client.make_bucket(bucket_name)
         # Set bucket policy for public access if required

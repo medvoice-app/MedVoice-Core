@@ -1,0 +1,3 @@
+# Local environment configuration
+app:
+  on_localhost: 1

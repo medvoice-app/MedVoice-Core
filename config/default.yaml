@@ -1,0 +1,21 @@
+# Core application settings
+app:
+  # Toggle for mock data insertion (0=disabled, 1=enabled) 
+  insert_mock_data: 0
+  # Toggle for development environment (0=prod, 1=local)
+  on_localhost: 1
+  # Toggle for RAG system (0=disabled, 1=enabled)
+  rag_sys: 1
+
+# MinIO configuration
+minio:
+  endpoint: "minio:9000"
+  external_endpoint: "localhost:9000"
+  access_key: "minioadmin"
+  secret_key: "minioadmin"
+  secure: false
+  bucket_name: "medvoice-storage"
+
+# Ollama configuration
+ollama:
+  base_url: "http://host.docker.internal:11434"
