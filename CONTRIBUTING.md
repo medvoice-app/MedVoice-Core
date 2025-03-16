@@ -82,7 +82,7 @@ Thank you for your interest in contributing to MedVoice-FastAPI! This document o
 - Keep line length to a maximum of 100 characters
 
 ### Project Structure
-- API endpoints in `/app/api/v1/endpoints`
+- API endpoints in `/app/endpoints`
 - Database models in `/app/models`
 - Schemas in `/app/schemas`
 - Utility functions in `/app/utils`
