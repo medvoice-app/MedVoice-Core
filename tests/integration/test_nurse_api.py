@@ -8,7 +8,7 @@ def test_register_nurse(client):
     unique_email = f"new_nurse_{uuid.uuid4().hex[:8]}@example.com"
     
     response = client.post(
-        "/api/v1/nurses/register",  # Change back to nurses (plural)
+        "/nurses/register",  # Change back to nurses (plural)
         json={
             "name": "New Nurse",
             "email": unique_email,
@@ -25,7 +25,7 @@ def test_register_nurse(client):
 def test_register_duplicate_email(client, test_nurse):
     """Test registration with an existing email."""
     response = client.post(
-        "/api/v1/nurses/register",  # Change back to nurses (plural)
+        "/nurses/register",  # Change back to nurses (plural)
         json={
             "name": "Duplicate Nurse",
             "email": test_nurse["email"],  # Use existing email
@@ -39,7 +39,7 @@ def test_register_duplicate_email(client, test_nurse):
 def test_login_success(client, test_nurse):
     """Test successful login."""
     response = client.post(
-        "/api/v1/nurses/login",  # Change back to nurses (plural)
+        "/nurses/login",  # Change back to nurses (plural)
         json={
             "email": test_nurse["email"],
             "password": test_nurse["password"]
@@ -55,7 +55,7 @@ def test_login_success(client, test_nurse):
 def test_login_invalid_credentials(client, test_nurse):
     """Test login with invalid credentials."""
     response = client.post(
-        "/api/v1/nurses/login",  # Change back to nurses (plural)
+        "/nurses/login",  # Change back to nurses (plural)
         json={
             "email": test_nurse["email"],
             "password": "wrongpassword"
@@ -67,7 +67,7 @@ def test_login_invalid_credentials(client, test_nurse):
 
 def test_get_nurses(client, test_nurse):
     """Test getting all nurses."""
-    response = client.get("/api/v1/nurses/")  # Change back to nurses (plural)
+    response = client.get("/nurses/")  # Change back to nurses (plural)
     
     assert response.status_code == 200
     data = response.json()
@@ -82,7 +82,7 @@ def test_get_nurses(client, test_nurse):
 
 def test_get_nurse_by_id(client, test_nurse):
     """Test getting a nurse by ID."""
-    response = client.get(f"/api/v1/nurses/{test_nurse['id']}")  # Change back to nurses (plural)
+    response = client.get(f"/nurses/{test_nurse['id']}")  # Change back to nurses (plural)
     
     assert response.status_code == 200
     data = response.json()
@@ -99,7 +99,7 @@ def test_update_nurse(client, test_nurse):
     }
     
     response = client.put(
-        f"/api/v1/nurses/{test_nurse['id']}",  # Change back to nurses (plural)
+        f"/nurses/{test_nurse['id']}",  # Change back to nurses (plural)
         json=update_data
     )
     
@@ -110,12 +110,12 @@ def test_update_nurse(client, test_nurse):
 
 def test_delete_nurse(client, test_nurse):
     """Test deleting a nurse."""
-    response = client.delete(f"/api/v1/nurses/{test_nurse['id']}")  # Change back to nurses (plural)
+    response = client.delete(f"/nurses/{test_nurse['id']}")  # Change back to nurses (plural)
     
     assert response.status_code == 200
     assert response.json() is True
     
     # Verify the nurse is actually deleted
-    get_response = client.get(f"/api/v1/nurses/{test_nurse['id']}")
+    get_response = client.get(f"/nurses/{test_nurse['id']}")
     assert "detail" in get_response.json()
     assert "Nurse not found" in get_response.json()["detail"]

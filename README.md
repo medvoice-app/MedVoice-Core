@@ -18,7 +18,7 @@ flowchart TB
 
     subgraph "API Layer"
         FastAPI["FastAPI Backend (8000)"]
-        APIEndpoints["API Endpoints (/api/v1/*)"]
+        APIEndpoints["API Endpoints (/*)"]
         Middleware["Authentication Middleware"]
     end
 
