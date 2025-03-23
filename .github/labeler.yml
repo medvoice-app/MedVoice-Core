@@ -1,35 +1,27 @@
-# .github/labeler.yml
 backend:
-- any:
-  - changed-files:
-    - any-glob-to-any-file: ['app/**/*', 'main.py']
+- changed-files:
+  - any-glob-to-any-file: ['app/**/*', 'main.py']
 
 documentation:
-- any:
-  - changed-files:
-    - any-glob-to-any-file: ['**/*.md', 'docs/**/*']
+- changed-files:
+  - any-glob-to-any-file: ['**/*.md', 'docs/**/*']
 
 tests:
-- any:
-  - changed-files:
-    - any-glob-to-any-file: 'tests/**/*'
+- changed-files:
+  - any-glob-to-any-file: 'tests/**/*'
 
 docker:
-- any:
-  - changed-files:
-    - any-glob-to-any-file: ['docker/**/*', 'Dockerfile', 'docker-compose.yml']
+- changed-files:
+  - any-glob-to-any-file: ['docker/**/*', 'Dockerfile', 'docker-compose.yml']
 
 configuration:
-- any:
-  - changed-files:
-    - any-glob-to-any-file: ['**/*.yml', '**/*.yaml', '**/*.json', '.env.example']
+- changed-files:
+  - any-glob-to-any-file: ['**/*.yml', '**/*.yaml', '**/*.json', '.env.example']
 
 github-actions:
-- any:
-  - changed-files:
-    - any-glob-to-any-file: '.github/**/*'
+- changed-files:
+  - any-glob-to-any-file: '.github/**/*'
 
 dependencies:
-- any:
-  - changed-files:
-    - any-glob-to-any-file: ['requirements.txt', 'poetry.lock', 'pyproject.toml']
+- changed-files:
+  - any-glob-to-any-file: ['requirements.txt', 'poetry.lock', 'pyproject.toml']
