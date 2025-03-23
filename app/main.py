@@ -40,7 +40,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan, title="MedVoice API")
 
 # Mounting local directory
-app.mount("/static", StaticFiles(directory="/workspace/code/static" if running_in_docker else "static"), name="static")
+app.mount("/static", StaticFiles(directory="/workspace/code/app/static" if running_in_docker else "app/static"), name="static")
 app.mount("/assets", StaticFiles(directory="/workspace/code/assets" if running_in_docker else "assets"), name="assets")
 app.add_middleware(
     CORSMiddleware,
@@ -50,7 +50,8 @@ app.add_middleware(
     allow_headers=['*'],
 )
 
-templates = Jinja2Templates(directory=".")
+# Update the templates directory to point to app/static where index.html now resides
+templates = Jinja2Templates(directory="/workspace/code/app/static" if running_in_docker else "app/static")
 
 # Include API router
 # app.include_router(api_router, prefix="/api/v1")

@@ -12,9 +12,9 @@ services:
     networks:
       - bridge-net
     volumes:
-      - ./static:/usr/share/nginx/html/static
+      - ./app/static:/usr/share/nginx/html/static
       - ./assets:/usr/share/nginx/html/assets
-      - ./index.html:/usr/share/nginx/html/index.html
+      - ./app/static/index.html:/usr/share/nginx/html/index.html
       - nginx_logs:/var/log/nginx
     logging:
       driver: "json-file"
