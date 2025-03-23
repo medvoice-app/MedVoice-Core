@@ -1,33 +1,27 @@
-# Add labels based on which files are modified in a PR
-# For more information about the syntax, see:
-# https://github.com/actions/labeler
-
 backend:
-- app/**/*
-- main.py
+- changed-files:
+  - any-glob-to-any-file: ['app/**/*', 'main.py']
 
 documentation:
-- '**/*.md'
-- docs/**/*
+- changed-files:
+  - any-glob-to-any-file: ['**/*.md', 'docs/**/*']
 
 tests:
-- tests/**/*
+- changed-files:
+  - any-glob-to-any-file: 'tests/**/*'
 
 docker:
-- docker/**/*
-- Dockerfile
-- docker-compose.yml
+- changed-files:
+  - any-glob-to-any-file: ['docker/**/*', 'Dockerfile', 'docker-compose.yml']
 
 configuration:
-- '**/*.yml'
-- '**/*.yaml'
-- '**/*.json'
-- .env.example
+- changed-files:
+  - any-glob-to-any-file: ['**/*.yml', '**/*.yaml', '**/*.json', '.env.example']
 
 github-actions:
-- .github/**/*
+- changed-files:
+  - any-glob-to-any-file: '.github/**/*'
 
 dependencies:
-- requirements.txt
-- poetry.lock
-- pyproject.toml
+- changed-files:
+  - any-glob-to-any-file: ['requirements.txt', 'poetry.lock', 'pyproject.toml']

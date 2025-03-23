@@ -7,9 +7,9 @@ RUN mkdir -p /var/log/nginx
 RUN rm -rf /usr/share/nginx/html/*
 
 # Copy static files
-COPY ./static /usr/share/nginx/html/static
+COPY ./app/static /usr/share/nginx/html/static
 COPY ./assets /usr/share/nginx/html/assets
-COPY index.html /usr/share/nginx/html/
+COPY ./app/static/index.html /usr/share/nginx/html/
 
 # Copy nginx configuration
 COPY docker/nginx/nginx.conf /etc/nginx/conf.d/default.conf

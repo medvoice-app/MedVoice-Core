@@ -12,9 +12,9 @@ services:
     networks:
       - bridge-net
     volumes:
-      - ./static:/usr/share/nginx/html/static
+      - ./app/static:/usr/share/nginx/html/static
       - ./assets:/usr/share/nginx/html/assets
-      - ./index.html:/usr/share/nginx/html/index.html
+      - ./app/static/index.html:/usr/share/nginx/html/index.html
       - nginx_logs:/var/log/nginx
     logging:
       driver: "json-file"
@@ -22,19 +22,38 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  minio:
+    image: minio/minio:latest
+    pull_policy: always
+    ports:
+      - "9000:9000" # API
+      - "9001:9001" # Web Console
+    env_file:
+      - ./env/minio.env
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - bridge-net
+    healthcheck:
+      test: [ "CMD", "wget", "--no-verbose", "--spider", "http://localhost:9000/minio/health/live" ]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: always
+
   web:
     build: .
     ports:
       - 8000:8000
-    environment:
-      - REDIS_URL=redis://redis:6379/0
-      - OLLAMA_BASE_URL=http://host.docker.internal:11434
-      - RUNNING_IN_DOCKER=true
     env_file:
+      - ./env/web.env
       - .env
     command: [ "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--loop", "asyncio" ]
     volumes:
       - ./app:/workspace/code/app
+      - ./config:/workspace/code/config # Configuration volume mount
     extra_hosts:
       - host.docker.internal:host-gateway
     networks:
@@ -44,6 +63,7 @@ services:
       - db
       - pgvector-db
       - ollama
+      - minio
 
   db:
     image: postgres:13
@@ -96,13 +116,20 @@ services:
     command: celery -A app.worker.celery_app worker --concurrency=1 --loglevel=info
     volumes:
       - ./app:/workspace/code/app
-    environment:
-      - REDIS_URL=redis://redis:6379/0
+      - ./config:/workspace/code/config # Configuration volume mount
+    env_file:
+      - ./env/worker.env
+      - .env
     networks:
       - bridge-net
     depends_on:
-      - web
-      - redis
+      minio:
+        condition: service_started
+      redis:
+        condition: service_started
+      web:
+        condition: service_started
+    restart: on-failure
 
   redis:
     image: redis:7
@@ -111,24 +138,38 @@ services:
 
   dashboard:
     build: .
-    command: celery --broker=redis://redis:6379/0 flower --port=5555
+    command: >
+      bash -c "
+        echo 'Waiting for workers to initialize...' &&
+        sleep 10 &&
+        echo 'Starting Flower dashboard...' &&
+        celery --broker=redis://redis:6379/0 flower --port=5555
+      "
     ports:
       - 5557:5555
     environment:
       - REDIS_URL=redis://redis:6379/0
+      - APP_ENVIRONMENT=${APP_ENVIRONMENT:-local} # Pass environment setting
+    volumes:
+      - ./app:/workspace/code/app # Mount app code
+      - ./config:/workspace/code/config # Configuration volume mount
     networks:
       - bridge-net
     depends_on:
-      - web
-      - redis
       - worker
+      - redis
+      - web
+      - minio
+      - db
+      - pgvector-db
 
 volumes:
   local-vol:
     driver: local
   postgres_data:
   pgvector_data:
-
+  nginx_logs:
+  minio_data:
 
 networks:
   bridge-net:

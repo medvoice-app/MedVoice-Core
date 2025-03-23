@@ -49,9 +49,15 @@ nvidia:
 # DOCKER COMMANDS
 ###############################################################################
 
+# Generate Docker environment files from configuration
+.PHONY: generate-env
+generate-env:
+	@echo "Generating Docker environment files from configuration..."
+	@python scripts/generate_env_files.py
+
 # Start the project using Docker Compose with optional GPU support
 .PHONY: up
-up:
+up: generate-env
 	@if [ "$(GPU)" = "true" ]; then \
 		echo "Starting with GPU support..."; \
 		sudo lsof -i :11434; \

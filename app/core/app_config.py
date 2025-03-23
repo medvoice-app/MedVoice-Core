@@ -1,8 +1,8 @@
-# Set to 1 to enable mock data insertion, set to 0 to disable it
-INSERT_MOCK_DATA = 0
+# This file provides backward compatibility with the old config structure
+# Import settings from the new config loader
+from app.core.config_loader import INSERT_MOCK_DATA, ON_LOCALHOST, RAG_SYS
 
-# Set to 1 to enable dev environment, set to 0 to enable prod environment
-ON_LOCALHOST = 1
-
-# Set to 1 to enable RAG System, set to 0 to disable RAG
-RAG_SYS = 1
+# These variables are now imported from config_loader which loads them from YAML files
+# INSERT_MOCK_DATA - Toggle for mock data insertion (0=disabled, 1=enabled)
+# ON_LOCALHOST - Toggle for development environment (0=prod, 1=local)
+# RAG_SYS - Toggle for RAG system (0=disabled, 1=enabled)

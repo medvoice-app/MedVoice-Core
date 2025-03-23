@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List, Union, Dict
+from typing import List, Union, Dict, Optional
 
 from ....db.session import get_db
 from ....schemas.nurse import *
@@ -9,26 +9,28 @@ from ....utils.passwd_helpers import get_password_hash, verify_password
 
 router = APIRouter()
 
-@router.get("/", response_model=Union[List[Nurse], Dict[str, str]])
-async def read_nurses(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)) -> Union[List[Nurse], Dict[str, str]]:
-    nurses = await crud_nurse.get_nurses(db, skip=skip, limit=limit)
-    if nurses:
-        return nurses
-    return {"detail": "No nurses found"}
+# Update to use NurseResponse instead of Nurse for list endpoint
+@router.get("/", response_model=List[NurseResponse])
+async def get_nurses(db: AsyncSession = Depends(get_db)) -> List[Nurse]:
+    return await crud_nurse.get_nurses(db)
 
-@router.get("/{nurse_id}", response_model=Union[Nurse, Dict[str, str]])
+# Update to use NurseResponse in Union response
+@router.get("/{nurse_id}", response_model=Union[NurseResponse, Dict[str, str]])
 async def read_nurse(nurse_id: int, db: AsyncSession = Depends(get_db)) -> Union[Nurse, Dict[str, str]]:
     db_nurse = await crud_nurse.get_nurse(db, nurse_id)
     if db_nurse:
         return db_nurse
     return {"detail": "Nurse not found"}
 
-@router.put("/{nurse_id}", response_model=Union[Nurse, Dict[str, str]])
+# Update to use NurseResponse in Union response
+@router.put("/{nurse_id}", response_model=Union[NurseResponse, Dict[str, str]])
 async def update_nurse(nurse_id: int, nurse: NurseUpdate, db: AsyncSession = Depends(get_db)) -> Union[Nurse, Dict[str, str]]:
     db_nurse = await crud_nurse.update_nurse(db, nurse_id, nurse)
     if db_nurse:
         return db_nurse
     return {"detail": "Nurse not found or update failed"}
+
+# Leave delete as is - it returns a boolean or dict
 @router.delete("/{nurse_id}", response_model=Union[bool, Dict[str, str]])
 async def delete_nurse(nurse_id: int, db: AsyncSession = Depends(get_db)) -> Union[bool, Dict[str, str]]:
     success = await crud_nurse.delete_nurse(db, nurse_id)
@@ -36,7 +38,8 @@ async def delete_nurse(nurse_id: int, db: AsyncSession = Depends(get_db)) -> Uni
         return success
     return {"detail": "Nurse not found or delete operation failed"}  
 
-@router.post("/register", response_model=Nurse)
+# Use NurseResponse for register endpoint
+@router.post("/register", response_model=NurseResponse)
 async def register_nurse(nurse: NurseRegister, db: AsyncSession = Depends(get_db)) -> Nurse:
     if await crud_nurse.is_email_taken(db, nurse.email):
         raise HTTPException(
@@ -63,6 +66,7 @@ async def register_nurse(nurse: NurseRegister, db: AsyncSession = Depends(get_db
             detail=f"Registration failed: {str(e)}"
         )
 
+# Leave login as is - it returns a dict
 @router.post("/login", response_model=Dict[str, Union[str, int]])
 async def login_nurse(nurse: NurseLogin, db: AsyncSession = Depends(get_db)) -> Dict[str, Union[str, int]]:
     db_nurse = await crud_nurse.get_nurse_by_email(db, nurse.email)

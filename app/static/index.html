@@ -5,57 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MedVoice Backend</title>
     <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon_io/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon_io/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon_io/favicon-16x16.png">
-    <link rel="icon" href="assets/favicon_io/favicon.ico" type="image/x-icon">
-    <link rel="manifest" href="assets/favicon_io/site.webmanifest">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon_io/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon_io/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon_io/favicon-16x16.png">
+    <link rel="icon" href="/assets/favicon_io/favicon.ico" type="image/x-icon">
+    <link rel="manifest" href="/assets/favicon_io/site.webmanifest">
     
     <!-- Add our custom CSS file after Tailwind to override its styles -->
-    <link rel="stylesheet" href="static/css/custom.css">
-    
-    <style>
-        .section-container {
-            @apply bg-white shadow-md rounded-lg p-6 mb-8;
-        }
-        .section-title {
-            @apply text-3xl font-bold mb-6 text-gray-800 border-b border-blue-500 pb-2;
-        }
-        .card {
-            @apply bg-white shadow-md rounded-lg p-6;
-        }
-        .btn-primary {
-            @apply bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-6 rounded-md transition duration-200 shadow-sm;
-        }
-        .btn-secondary {
-            @apply bg-gray-600 hover:bg-gray-800 text-white font-bold py-2 px-6 rounded-md transition duration-200 shadow-sm;
-        }
-        .btn-success {
-            @apply bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-6 rounded-md transition duration-200 shadow-sm;
-        }
-        .btn-danger {
-            @apply bg-red-600 hover:bg-red-800 text-white font-bold py-2 px-6 rounded-md transition duration-200 shadow-sm;
-        }
-        .input-field {
-            @apply w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500;
-        }
-        .table-header {
-            @apply py-3 px-6 bg-gray-200 font-bold text-gray-800 uppercase tracking-wider text-left border-b-2 border-gray-300;
-        }
-        .table-cell {
-            @apply py-4 px-6 border-b border-gray-200 text-gray-700;
-        }
-        .modal-title {
-            @apply text-2xl font-bold mb-6 text-gray-800 border-b border-gray-300 pb-2;
-        }
-        /* Fix for dark background buttons */
-        .bg-blue-700 {
-            background-color: #2563eb;
-        }
-        .bg-gray-800 {
-            background-color: #1f2937;
-        }
-    </style>
+    <link rel="stylesheet" href="/static/css/custom.css">
 </head>
 <body class="bg-gray-100">
     <header class="bg-blue-700 text-white py-6 shadow-lg mb-8">
@@ -75,9 +32,9 @@
             </div>
         
             <!-- Signup Modal -->
-            <div id="signupModal" class="fixed z-10 inset-0 overflow-y-auto hidden">
-                <div class="flex items-center justify-center min-h-screen">
-                    <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 w-full max-w-md relative">
+            <div id="signupModal" class="fixed z-40 inset-0 overflow-y-auto hidden modal-container">
+                <div class="flex items-center justify-center min-h-screen" onclick="closeModal('signupModal')">
+                    <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 w-full max-w-md relative z-50 modal-content" onclick="event.stopPropagation()">
                         <span onclick="closeModal('signupModal')" class="absolute top-0 right-0 p-4 cursor-pointer text-gray-500">&times;</span>
                         <h2 class="modal-title">Signup</h2>
                         <div class="mb-4">
@@ -86,6 +43,7 @@
                                    id="signupName" 
                                    name="signupName"
                                    autocomplete="name"
+                                   autofocus
                                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                         </div>
                         <div class="mb-4">
@@ -112,9 +70,9 @@
             </div>
         
             <!-- Login Modal -->
-            <div id="loginModal" class="fixed z-10 inset-0 overflow-y-auto hidden">
-                <div class="flex items-center justify-center min-h-screen">
-                    <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 w-full max-w-md relative">
+            <div id="loginModal" class="fixed z-40 inset-0 overflow-y-auto hidden modal-container">
+                <div class="flex items-center justify-center min-h-screen" onclick="closeModal('loginModal')">
+                    <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 w-full max-w-md relative z-50 modal-content" onclick="event.stopPropagation()">
                         <span onclick="closeModal('loginModal')" class="absolute top-0 right-0 p-4 cursor-pointer text-gray-500">&times;</span>
                         <h2 class="modal-title">Login</h2>
                         <div class="mb-4">
@@ -123,6 +81,7 @@
                                    id="loginEmail" 
                                    name="loginEmail"
                                    autocomplete="email"
+                                   autofocus
                                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                         </div>
                         <div class="mb-6">
@@ -154,20 +113,34 @@
                             <th class="table-header">Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="nurse-table-body"></tbody>
+                    <tbody id="nurse-table-body">
+                        <!-- Nurses will be loaded here -->
+                    </tbody>
                 </table>
             </div>
         
+            <div id="nurse-loading" class="mt-4 text-center">Loading nurses...</div>
+            <div id="nurse-error" class="mt-4 p-4 bg-red-100 text-red-700 rounded-md" style="display: none;"></div>
+        
+            <div class="mt-4 flex justify-end">
+                <button onclick="fetchNurses()" class="btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Refresh List
+                </button>
+            </div>
+        
             <!-- Edit Nurse Modal -->
-            <div id="editNurseModal" class="fixed z-10 inset-0 overflow-y-auto hidden">
-                <div class="flex items-center justify-center min-h-screen">
-                    <div class="bg-white p-4 rounded-lg shadow-lg w-1/3">
+            <div id="editNurseModal" class="fixed z-40 inset-0 overflow-y-auto hidden modal-container">
+                <div class="flex items-center justify-center min-h-screen" onclick="closeEditNurseModal()">
+                    <div class="bg-white p-4 rounded-lg shadow-lg w-1/3 relative z-50 modal-content" onclick="event.stopPropagation()">
                         <h2 class="modal-title">Edit Nurse</h2>
                         <form id="editNurseForm">
                             <input type="hidden" id="editNurseId">
                             <div class="mb-4">
                                 <label for="editNurseName" class="block text-sm font-bold mb-2">Name</label>
-                                <input type="text" id="editNurseName" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                <input type="text" id="editNurseName" autofocus class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                             </div>
                             <div class="mb-4">
                                 <label for="editNurseEmail" class="block text-sm font-bold mb-2">Email</label>
@@ -281,7 +254,7 @@
             
             <!-- Add spinner -->
             <div id="audioUploadSpinner" class="flex justify-center mt-4" style="display: none;">
-                <img src="./assets/Bean Eater@1x-1.0s-200px-200px.gif" alt="Loading..." />
+                <img src="/assets/Bean Eater@1x-1.0s-200px-200px.gif" alt="Loading..." />
             </div>
         </section>
         
@@ -304,7 +277,7 @@
             </div>
             
             <div id="transcript-spinner" class="flex justify-center" style="display: none;">
-                <img src="./assets/Bean Eater@1x-1.0s-200px-200px.gif" alt="Loading..." />
+                <img src="/assets/Bean Eater@1x-1.0s-200px-200px.gif" alt="Loading..." />
             </div>
             
             <div id="transcript-error" class="mt-4 p-4 bg-red-100 text-red-700 rounded-md" style="display: none;"></div>
@@ -348,7 +321,7 @@
             </div>
             
             <div id="rag-spinner" class="flex justify-center" style="display: none;">
-                <img src="./assets/Bean Eater@1x-1.0s-200px-200px.gif" alt="Loading..." />
+                <img src="/assets/Bean Eater@1x-1.0s-200px-200px.gif" alt="Loading..." />
             </div>
             
             <div class="mt-4">
@@ -366,16 +339,24 @@
 
     <!-- Add these script tags just before </body> -->
     <!-- Load the config file first to define apiUrl -->
-    <script src="static/js/config.js"></script>
-    <script src="static/js/modal.js"></script>
-    <script src="static/js/api.js"></script>
-    <script src="static/js/auth.js"></script>
-    <script src="static/js/table.js"></script>
-    <script src="static/js/crud.js"></script>
-    <script src="static/js/rag-system.js"></script>
-    <script src="static/js/llm-pipeline.js"></script>
-    <script src="static/js/audio-upload.js"></script>
-    <script src="static/js/transcript-viewer.js"></script>
+    <script src="/static/js/config.js"></script>
+    <script src="/static/js/modal.js"></script>
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/form-utils.js"></script>
+    <script src="/static/js/auth.js"></script>
+    <script src="/static/js/table.js"></script>
+    <script src="/static/js/crud.js"></script>
+    <script>
+        // Initialize the page by fetching nurses when the DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, fetching nurses...');
+            fetchNurses();
+        });
+    </script>
+    <script src="/static/js/rag-system.js"></script>
+    <script src="/static/js/llm-pipeline.js"></script>
+    <script src="/static/js/audio-upload.js"></script>
+    <script src="/static/js/transcript-viewer.js"></script>
 </body>
 </html>
 
