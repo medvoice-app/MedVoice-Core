@@ -83,14 +83,12 @@ MedVoice-FastAPI/
 │   ├── models/             # Database models
 │   ├── schemas/            # Pydantic schemas
 │   └── utils/              # Utility functions
+│   └── static/             # Static frontend files
 ├── assets/                 # Static assets
 ├── audios/                 # Audio file storage
 ├── docker/                 # Docker configuration files
 ├── docs/                   # Documentation
-├── outputs/                # Output file storage
 ├── scripts/                # Utility scripts
-└── static/                 # Static frontend files
-    └── js/                 # JavaScript files
 ```
 
 ## Quick Start
